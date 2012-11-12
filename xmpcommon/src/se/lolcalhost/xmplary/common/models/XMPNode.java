@@ -21,7 +21,7 @@ public class XMPNode {
 	}
 
 	private static final String ID = "id";
-	@DatabaseField(id = true, canBeNull = false, columnName = ID)
+	@DatabaseField(columnName = ID, generatedId = true)
 	private int id;
 
 
@@ -86,7 +86,7 @@ public class XMPNode {
 	}
 	
 	private static XMPNode self = null;
-	public static XMPNode self() {
+	public static XMPNode getSelf() {
 		if (self == null) {
 			try {
 				List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(NAME, XMPConfig.Name());

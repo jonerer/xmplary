@@ -143,7 +143,7 @@ public class XMPMain {
 		XMPMessage msg;
 		try {
 			logger.trace(String.format("Attempting to parse message %s ...", message.getBody()));
-			msg = XMPMessage.parseFrom(message);
+			msg = XMPMessage.unpack(message);
 			
 			logger.trace("Parse successful. Finding origin node.");
 			

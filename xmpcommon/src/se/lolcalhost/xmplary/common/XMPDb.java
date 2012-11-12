@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
+import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
 
@@ -16,6 +17,7 @@ import com.j256.ormlite.table.TableUtils;
 public class XMPDb {
 	public static Dao<XMPNode, String> Nodes;
 	public static Dao<XMPMessage, String> Messages;
+	public static Dao<XMPDataPoint, String> DataPoints;
 	protected static Logger logger = Logger.getLogger(XMPDb.class);
 	private static ConnectionSource connectionSource;
 
@@ -33,10 +35,12 @@ public class XMPDb {
 			// instantiate the DAO to handle Account with String id
 			Nodes = DaoManager.createDao(connectionSource, XMPNode.class);
 			Messages = DaoManager.createDao(connectionSource, XMPMessage.class);
+			DataPoints = DaoManager.createDao(connectionSource, XMPDataPoint.class);
 	
 			// if you need to create the 'accounts' table make this call
 			TableUtils.createTableIfNotExists(connectionSource, XMPNode.class);
 			TableUtils.createTableIfNotExists(connectionSource, XMPMessage.class);
+			TableUtils.createTableIfNotExists(connectionSource, XMPDataPoint.class);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

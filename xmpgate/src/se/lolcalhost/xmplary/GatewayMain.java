@@ -6,8 +6,8 @@ import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.strategies.LoggerReceiverStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy;
 
-public class Main extends XMPMain {
-	public Main() {
+public class GatewayMain extends XMPMain {
+	public GatewayMain() {
 		init();
 		
 		dispatchers.add(new MUCDispatchStrategy(this));
@@ -23,7 +23,7 @@ public class Main extends XMPMain {
 	 */
 	public static void main(String[] args) throws XMPPException,
 			InterruptedException {
-		new Main();
+		new GatewayMain();
 	}
 
 }

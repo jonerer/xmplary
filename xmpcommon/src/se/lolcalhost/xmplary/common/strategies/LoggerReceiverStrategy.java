@@ -18,7 +18,7 @@ public class LoggerReceiverStrategy extends MessageReceiverStrategy {
 	public void ReceiveMessage(XMPMessage m) {
 		//XMPNode s = XMPNode.getByJID(m.getFrom());
 		String format = String.format("Received message of type %s with contents %s. Sender is %s. I am %s.", m.getType().toString(),
-				m.getContents(), m.getFrom().getName(), XMPNode.self().getName());
+				m.getContents(), m.getFrom().getName(), XMPNode.getSelf().getName());
 		logger.info(format);
 	}
 

@@ -37,8 +37,6 @@ public class LeafDispatchStrategy extends MessageDispatchStrategy {
 			chats.get(jid).sendMessage(asJSON);
 		} catch (XMPPException e) {
 			logger.error("Couldn't dispatch message to Chat.");
-		} catch (JSONException e) {
-			logger.error("Couldn't dispatch message to Chat.");
 		}
 	}
 
