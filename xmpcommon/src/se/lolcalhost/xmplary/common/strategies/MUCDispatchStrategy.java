@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.FormField;
@@ -36,14 +37,27 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 			joinMuc();
 		}
 		try {
-			muc.sendMessage(mess.getContents());
+			muc.sendMessage(mess.getRawContents());
 		} catch (XMPPException e) {
 			logger.error("Couldn't dispatch message to MUC.");
 		}
 	}
+	
+	@Override
+	public void DispatchRawMessage(String msg) {
+		if (!hasJoinedMuc) {
+			joinMuc();
+		}
+		try {
+			muc.sendMessage(msg);
+		} catch (XMPPException e) {
+			logger.error("Couldn't dispatch raw message to MUC.");
+
+		}
+	};
 
 	private void joinMuc() {
-		Connection con = main.getConnection();
+		final Connection con = main.getConnection();
 		String room = XMPConfig.Room();
 		if (con != null && con.isConnected() && con.isAuthenticated()) {
 			logger.info("Connected to " + con.getServiceName() + " as JID " + con.getUser());
@@ -104,12 +118,13 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 					@Override
 					public void processPacket(Packet arg0) {
 					
-//						Class c = arg0.getClass();
-//						if (!arg0.getFrom().equals(con.getUser())) {
-//							if (arg0 instanceof Message) {
+						Class c = arg0.getClass();
+						if (!arg0.getFrom().equals(con.getUser())) {
+							if (arg0 instanceof Message) {
+								main.receivePacket(arg0);
 //								logger.info("Message in the room: " + arg0.getFrom() + ": " + arg0.toString());
-//							}
-//						}
+							}
+						}
 					}
 				});
 			} catch (XMPPException e) {

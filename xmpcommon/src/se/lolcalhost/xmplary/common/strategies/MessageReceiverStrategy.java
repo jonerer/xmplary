@@ -1,6 +1,6 @@
 package se.lolcalhost.xmplary.common.strategies;
 
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Message;
 
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
@@ -11,6 +11,6 @@ public abstract class MessageReceiverStrategy {
 		this.main = main;
 	}
 	
-	public void PreparseReceivePacket(Packet m) {}
+	public void PreparseReceiveMessage(Message m) {}
 	public abstract void ReceiveMessage(XMPMessage m);
 }

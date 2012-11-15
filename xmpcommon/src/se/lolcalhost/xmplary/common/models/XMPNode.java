@@ -17,7 +17,9 @@ public class XMPNode {
 	public enum NodeType {
 		gateway,
 		leaf,
-		backend
+		backend,
+		operator,
+		unknown
 	}
 
 	private static final String ID = "id";
@@ -139,9 +141,14 @@ public class XMPNode {
 
 	public static XMPNode createByJID(String from) {
 		XMPNode node = new XMPNode();
+		
 		String name = from.split("@")[0];
 		node.setName(name);
-		node.setType(XMPNode.getTypeFromName(name));
+		try {
+			node.setType(XMPNode.getTypeFromName(name));
+		} catch (IllegalArgumentException e) {
+			node.setType(NodeType.unknown);
+		}
 		try {
 			XMPDb.Nodes.create(node);
 		} catch (SQLException e) {
@@ -175,6 +182,18 @@ public class XMPNode {
 			logger.info(e);
 		}
 		return NodeType.valueOf(typename);
+	}
+
+	public boolean isRegistered() {
+		return registered;
+	}
+
+	public void setRegistered(boolean registered) {
+		this.registered = registered;
+	}
+	
+	public boolean equals(Object o) {
+		return o.getClass().equals(XMPNode.class) && ((XMPNode) o).getJID().equals(getJID());
 	}
 
 }

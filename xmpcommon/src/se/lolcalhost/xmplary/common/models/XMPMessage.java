@@ -2,7 +2,7 @@ package se.lolcalhost.xmplary.common.models;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -12,26 +12,25 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.lolcalhost.xmplary.common.XMPDb;
+import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable
-public class XMPMessage {
+public class XMPMessage implements JSONSerializable {
 	public static enum MessageType {
-		Hello,
 		Alarm,
-		DataDump,
-		RegisterBackend,
-		RemoveBackend,
-		DebugText,
-		DataPoints
+
+		IsRegistered, RegisterBackend, RemoveBackend,
+
+		DebugText, DataPoints, RequestDataPoints
 	}
-	
+
 	protected static Logger logger = Logger.getLogger(XMPMessage.class);
-	
-	private static final String ID = "id";
+
+	public static final String ID = "id";
 	@DatabaseField(columnName = ID, generatedId = true)
 	private int id;
 
@@ -41,15 +40,15 @@ public class XMPMessage {
 	public static final String CONTENTS = "contents";
 	@DatabaseField(columnName = CONTENTS)
 	private String contents;
-	
+
 	public static final String TYPE = "type";
 	@DatabaseField(canBeNull = false, columnName = TYPE)
 	private MessageType type;
-	
+
 	public static final String TARGET = "target";
 	@DatabaseField(canBeNull = true, columnName = TARGET, foreign = true)
 	private XMPNode target;
-	
+
 	public static final String FROM = "from";
 	@DatabaseField(canBeNull = false, columnName = FROM, foreign = true)
 	private XMPNode from;
@@ -57,30 +56,29 @@ public class XMPMessage {
 	public static final String OUTGOING = "outgoing";
 	@DatabaseField(canBeNull = false, columnName = OUTGOING)
 	private boolean outgoing;
-	
+
 	public static final String DELIVERED = "delivered";
 	@DatabaseField(canBeNull = false, columnName = DELIVERED)
 	private boolean delivered;
 
-//	protected List<HashMap<DataPointField, Float>> dataPoints = new ArrayList<HashMap<DataPointField,Float>>();
+	// protected List<HashMap<DataPointField, Float>> dataPoints = new
+	// ArrayList<HashMap<DataPointField,Float>>();
 	// TODO: is there a change between sent and acknowledged?
-	
+
 	public XMPMessage() {
 		from = XMPNode.getSelf(); // default is to send from self.
+		target = XMPNode.getGateway(); // default is to send to gateway.
 	}
 
-	public String getContents() {
+	public XMPMessage(MessageType mt) {
+		this();
+		type = mt;
+	}
+
+	public String getRawContents() {
 		return contents;
 	}
 
-	public void setContents(String contents) {
-		this.contents = contents;
-	}
-	
-	public void setContents(JSONObject contents) {
-		this.contents = contents.toString();
-	}
-	
 	public MessageType getType() {
 		return type;
 	}
@@ -123,49 +121,148 @@ public class XMPMessage {
 
 	/**
 	 * Unpacks a message from from an XMPP message into an XMP message.
-	 * Warning: this method has side effects; e.g. if the message is a DataPoint-message, it will create
-	 * a bunch of XMPDataPoints in the database. 
+	 * 
 	 * @param message
 	 * @return
 	 * @throws JSONException
+	 * @throws SQLException
 	 */
-	public static XMPMessage unpack(Message message) throws JSONException {
+	public static XMPMessage unpack(Message message) {
 		XMPMessage msg = new XMPMessage();
-		msg.delivered = true;
-		
-		JSONObject contents2 = new JSONObject(message.getBody());
-		msg.setContents(contents2.getString("contents"));
-		msg.setType(MessageType.valueOf(contents2.getString("type")));
-		
+		try {
+			msg.setOutgoing(false);
+			msg.setDelivered(true);
+			msg.setTarget(XMPNode.getSelf());
+			
+			JSONObject jo;
+			jo = new JSONObject(message.getBody());
+			msg.readObject(jo);
+			
+			logger.trace("Parse successful. Finding origin node.");
+
+			XMPNode from = XMPNode.getByJID(message.getFrom());
+			if (from == null) {
+				logger.info("Unknown sender. Creating new database record.");
+				from = XMPNode.createByJID(message.getFrom());
+			} else {
+				logger.trace("Sender node identified.");
+			}
+
+			msg.setFrom(from);
+			if (jo.has("contents")) {
+				msg.setContents(jo.get("contents"));
+			}
+			
+		} catch (JSONException e) {
+			logger.warn("Unable to unpack message into XMPMessage. Body: "
+					+ message.getBody());
+			msg = null;
+		}
 		return msg;
 	}
-	
+
+	public XMPMessage createResponse() {
+		return createResponse(null);
+	}
+
+	public Object getContents() throws JSONException {
+		if (type == MessageType.DataPoints) {
+			List<XMPDataPoint> res = new ArrayList<XMPDataPoint>();
+			JSONArray ja = new JSONArray(contents);
+			for (int i = 0; i < ja.length(); i++) {
+				JSONObject jo = ja.getJSONObject(i);
+				XMPDataPoint p = new XMPDataPoint();
+				p.readObject(jo);
+				p.setReceived(new Date());
+				res.add(p);
+			}
+			return res;
+		} else {
+			return contents;
+		}
+	}
+
+	public void setContents(Object contents) {
+		try {
+			if (contents instanceof JSONObject) {
+				this.contents = ((JSONObject) contents).toString();
+			} else if (contents instanceof String) {
+				this.contents = (String) contents;
+			} else if (contents instanceof List<?>) {
+				JSONArray ar = new JSONArray();
+				for (Object o : (List<?>) contents) {
+					JSONObject jo = new JSONObject();
+					((JSONSerializable) o).writeObject(jo); // TODO: should this put things into DB as well?
+
+					ar.put(jo);
+				}
+				this.contents = ar.toString();
+			}
+		} catch (JSONException e) {
+			throw new IllegalArgumentException();
+		}
+	}
+
+	private XMPMessage createResponse(JSONObject object) {
+		XMPMessage m = new XMPMessage(type);
+		m.setTarget(from);
+		m.setOutgoing(true);
+		m.setContents(object);
+		return m;
+	}
+
 	public String asJSON() {
 		JSONObject json = new JSONObject();
-		try {
-			json.put("contents", contents);
-
-			json.put("type", type.toString());
-			
-			if (type == MessageType.DataPoints) {
-				// add all related datapoints (as JSONObjects)
-				JSONArray ja = new JSONArray();
-				List<XMPDataPoint> queryForEq = XMPDb.DataPoints.queryForEq("message_id", this);
-				for (XMPDataPoint xmpDataPoint : queryForEq) {
-					JSONObject jo = new JSONObject();
-					for (DataPointField field : DataPointField.values()) {
-						jo.put(field.name(), xmpDataPoint.getContents().get(field));
-					}
-					ja.put(jo);
-				}
-				json.put("contents", ja.toString());
-			}
-		
-		} catch (JSONException e) {
-			logger.error("Unable to serialize xmp message: ", e);
-		} catch (SQLException e) {
-			logger.error("Unable to serialize xmp message: ", e);
-		}
+		writeObject(json);
 		return json.toString();
 	}
+
+	public void writeObject(JSONObject stream) {
+		try {
+			stream.put("contents", contents);
+
+			stream.put("type", type.toString());
+
+//			if (type == MessageType.DataPoints) {
+//				// add all related datapoints (as JSONObjects)
+//				JSONArray ja = new JSONArray();
+//				List<XMPDataPoint> queryForEq = XMPDataPointMessages
+//						.pointsForMessage(this);
+//				for (XMPDataPoint xmpDataPoint : queryForEq) {
+//					JSONObject jo = new JSONObject();
+//					xmpDataPoint.writeObject(jo);
+//					ja.put(jo);
+//				}
+//				stream.put("contents", ja.toString());
+//			}
+		} catch (JSONException e) {
+			logger.error("Unable to serialize xmp message: ", e);
+		} 
+//		catch (SQLException e) {
+//			logger.error("Unable to serialize xmp message: ", e);
+//		}
+	}
+
+	public void readObject(JSONObject stream) throws JSONException {
+		type = MessageType.valueOf(stream.getString("type"));
+	}
+
+	public JSONObject asJSONObject() {
+		JSONObject json = new JSONObject();
+		writeObject(json);
+		return json;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void save() {
+		try {
+			XMPDb.Messages.createOrUpdate(this);
+		} catch (SQLException e) {
+			logger.error("Couldn't save xmp message into DB.", e);
+		}
+	}
+
 }

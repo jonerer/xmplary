@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.text.DateFormat;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 
@@ -40,6 +41,10 @@ public class XMPConfig {
 	
 	public static NodeType Type() {
 		return NodeType.valueOf(p.getProperty("type"));
+	}
+	
+	public static DateFormat jsonDateFormat() {
+		return DateFormat.getDateTimeInstance();
 	}
 
 	private static void init() {
@@ -89,6 +94,15 @@ public class XMPConfig {
 				e.printStackTrace();
 			}
 		}
+		
+		
 	}
 
+	public static int getMaxDataPointsPerPacket() {
+		if (p.contains("MaxDataPointsPerPacket")) {
+			return Integer.valueOf(p.getProperty("MaxDataPointsPerPacket"));
+		} else {
+			return 40;
+		}
+	}
 }

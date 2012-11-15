@@ -6,3 +6,6 @@
 .metadata
 *.*~
 *.core.prefs
+xmpgate/database.db
+xmpleaf/database.db
+xmpback/database.db

@@ -13,14 +13,14 @@ import org.json.JSONException;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 
-public class LeafDispatchStrategy extends MessageDispatchStrategy {
+public class ChatDispatchStrategy extends MessageDispatchStrategy {
 	private boolean hasJoinedChat = false;
 	private MultiUserChat muc;
 	private Logger logger;
 	private HashMap<String, Chat> chats = new HashMap<String, Chat>();
 	
 
-	public LeafDispatchStrategy(XMPMain main) {
+	public ChatDispatchStrategy(XMPMain main) {
 		super(main);
 		logger = Logger.getLogger(this.getClass());
 	}
@@ -45,27 +45,6 @@ public class LeafDispatchStrategy extends MessageDispatchStrategy {
 		ChatManager cm = con.getChatManager();
 		Chat c = cm.createChat(target, null);
 		chats.put(target, c);
-//		cm.createChat(userJID, listener);
-//		cm.addChatListener(new ChatManagerListener() {
-//			
-//			@Override
-//			public void chatCreated(Chat arg0, boolean arg1) {
-//				logger.info("Chat created with " + arg0.getParticipant() + " arg1: " + arg1);
-//				arg0.addMessageListener(new MessageListener() {
-//					@Override
-//					public void processMessage(Chat arg0, Message arg1) {
-//						logger.info("Got message in chat with " + arg0.getParticipant() + ": " + arg1.getBody());
-//						try {
-//							arg0.sendMessage("Hej på dig med du!");
-//						} catch (XMPPException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//					}
-//				});
-//				
-//			}
-//		});
 	}
 
 }

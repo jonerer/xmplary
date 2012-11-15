@@ -4,24 +4,21 @@ import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.strategies.ChatDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy;
 
-public class LeafMain extends XMPMain {
-	public LeafMain() {
+public class BackMain extends XMPMain {
+	
+	public BackMain() {
 		init();
-		WeldingThread wt = new WeldingThread(this);
-		wt.start();
 
 		dispatchers.add(new MUCDispatchStrategy(this));
 		dispatchers.add(new ChatDispatchStrategy(this));
+		receivers.add(new OperatorInputStrategy(this));
+		receivers.add(new BackendGatewayReceiverStrategy(this));
 
 		keepRunning();
 	}
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		new LeafMain();
+		new BackMain();
 	}
 
 }
