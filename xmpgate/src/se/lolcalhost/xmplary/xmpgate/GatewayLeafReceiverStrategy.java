@@ -1,16 +1,12 @@
-package se.lolcalhost.xmplary;
+package se.lolcalhost.xmplary.xmpgate;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import se.lolcalhost.xmplary.common.XMPConfig;
-import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;

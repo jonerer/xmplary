@@ -1,8 +1,9 @@
-package se.localhost.xmplary;
+package se.localhost.xmplary.xmpleaf;
 
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.strategies.ChatDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy;
+import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 
 public class LeafMain extends XMPMain {
 	public LeafMain() {
@@ -10,7 +11,7 @@ public class LeafMain extends XMPMain {
 		WeldingThread wt = new WeldingThread(this);
 		wt.start();
 
-		dispatchers.add(new MUCDispatchStrategy(this));
+		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
 
 		keepRunning();

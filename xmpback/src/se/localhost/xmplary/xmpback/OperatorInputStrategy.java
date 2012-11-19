@@ -1,4 +1,4 @@
-package se.localhost.xmplary;
+package se.localhost.xmplary.xmpback;
 
 import java.util.HashMap;
 

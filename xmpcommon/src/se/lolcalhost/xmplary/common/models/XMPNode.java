@@ -196,5 +196,13 @@ public class XMPNode {
 		return o.getClass().equals(XMPNode.class) && ((XMPNode) o).getJID().equals(getJID());
 	}
 
+	public static XMPNode getOrCreateByJID(String string) {
+		XMPNode node = getByJID(string);
+		if (node == null) {
+			node = createByJID(string);
+		}
+		return node;
+	}
+
 }
 

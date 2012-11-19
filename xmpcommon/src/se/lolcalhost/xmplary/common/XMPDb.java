@@ -61,5 +61,11 @@ public class XMPDb {
 			}
 		}
 	}
+
+
+	public static ConnectionSource getConnectionSource() {
+		return connectionSource;
+	}
+
 	
 }

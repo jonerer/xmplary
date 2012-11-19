@@ -18,7 +18,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 import se.lolcalhost.xmplary.common.models.XMPMessage;
-import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.strategies.MessageDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.MessageReceiverStrategy;
 
@@ -32,7 +31,8 @@ public class XMPMain {
 	protected ArrayList<MessageReceiverStrategy> receivers = new ArrayList<MessageReceiverStrategy>();
 
 	protected void init() {
-		PropertyConfigurator.configure("../xmpcommon/log4j.properties"); // initialize log4j
+		PropertyConfigurator.configure("../xmpcommon/log4j.properties"); // initialize
+																			// log4j
 		XMPDb.init();
 		initConf();
 
@@ -126,7 +126,8 @@ public class XMPMain {
 	public void dispatch(XMPMessage xmp) {
 		// TODO: here is where to sign stuff.
 		try {
-			xmp.setDelivered(true); // TODO: maybe do this later, after getting an ACK?
+			xmp.setDelivered(true); // TODO: maybe do this later, after getting
+									// an ACK?
 			xmp.setOutgoing(true);
 			XMPDb.Messages.createOrUpdate(xmp);
 		} catch (SQLException e) {
@@ -136,26 +137,27 @@ public class XMPMain {
 			dispatcher.DispatchMessage(xmp);
 		}
 	}
-	
+
 	public void dispatchRaw(String xmp) {
 		// TODO: here is where to sign stuff.
 		for (MessageDispatchStrategy dispatcher : dispatchers) {
 			dispatcher.DispatchRawMessage(xmp);
 		}
 	}
-	
+
 	public void receivePacket(Packet p) {
 		if (p instanceof Message) {
-			receiveMessage((Message)p);
+			receiveMessage((Message) p);
 		}
 	}
 
 	public void receiveMessage(Message message) {
-		// TODO: here is where to check the integrity of stuff, and stuff's sender
+		// TODO: here is where to check the integrity of stuff, and stuff's
+		// sender
 		for (MessageReceiverStrategy receiver : receivers) {
 			receiver.PreparseReceiveMessage(message);
 		}
-		
+
 		XMPMessage msg;
 		logger.trace(String.format("Attempting to parse message %s ...",
 				message.getBody()));
@@ -165,6 +167,7 @@ public class XMPMain {
 		if (msg != null) {
 			for (MessageReceiverStrategy receiver : receivers) {
 				receiver.ReceiveMessage(msg);
+
 			}
 		}
 	}

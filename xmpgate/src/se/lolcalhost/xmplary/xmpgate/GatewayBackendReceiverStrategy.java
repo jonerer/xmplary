@@ -1,5 +1,7 @@
-package se.lolcalhost.xmplary;
+package se.lolcalhost.xmplary.xmpgate;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import org.json.JSONObject;
 import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
+import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPointMessages;
@@ -20,18 +23,23 @@ import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 import se.lolcalhost.xmplary.common.strategies.MessageReceiverStrategy;
+import se.lolcalhost.xmplary.xmpgate.commands.IsRegistered;
+import se.lolcalhost.xmplary.xmpgate.commands.RegisterBackend;
+import se.lolcalhost.xmplary.xmpgate.commands.RemoveBackend;
+import se.lolcalhost.xmplary.xmpgate.commands.SendDataPoints;
 
 public class GatewayBackendReceiverStrategy extends MessageReceiverStrategy {
 	public interface BackendMessageCommandStrategy {
 		public void HandleCommand(XMPMessage m) throws JSONException, SQLException, AuthorizationFailureException;
 	}
 
+	HashMap<MessageType, Class<? extends Command>> hax = new HashMap<XMPMessage.MessageType, Class<? extends Command>>();
 	HashMap<MessageType, BackendMessageCommandStrategy> handlers = new HashMap<MessageType, BackendMessageCommandStrategy>();
 	protected static Logger logger = Logger.getLogger(GatewayBackendReceiverStrategy.class);
 
 	public GatewayBackendReceiverStrategy(XMPMain main) {
 		super(main);
-		registerHandlers();
+		registerHandlers2();
 	}
 
 	@Override
@@ -40,16 +48,39 @@ public class GatewayBackendReceiverStrategy extends MessageReceiverStrategy {
 			if (m.getTarget().equals(XMPNode.getSelf())) {
 				// else, pass it on along to the real target.
 				try {
-					handlers.get(m.getType()).HandleCommand(m);
+//					handlers.get(m.getType()).HandleCommand(m);
+					Class<? extends Command> c = hax.get(m.getType());
+					Constructor<? extends Command> con = c.getConstructor(XMPMain.class, XMPMessage.class);
+					Command command = con.newInstance(main, m);
+					command.execute();
 				} catch (JSONException e) {
 					logger.error("Error in gateway backend reciever handler: ", e);
 				} catch (SQLException e) {
 					logger.error("Error in gateway backend reciever handler: ", e);
 				} catch (AuthorizationFailureException e) {
 					logger.error("Error in gateway backend reciever handler: ", e);
+				} catch (SecurityException e) {
+					logger.error("Error in gateway backend reciever handler: ", e);
+				} catch (NoSuchMethodException e) {
+					logger.error("Error in gateway backend reciever handler: ", e);
+				} catch (IllegalArgumentException e) {
+					logger.error("Error in gateway backend reciever handler: ", e);
+				} catch (InstantiationException e) {
+					logger.error("Error in gateway backend reciever handler: ", e);
+				} catch (IllegalAccessException e) {
+					logger.error("Error in gateway backend reciever handler: ", e);
+				} catch (InvocationTargetException e) {
+					logger.error("Error in gateway backend reciever handler: ", e);
 				}
 			}
 		}
+	}
+	
+	private void registerHandlers2() {
+		hax.put(MessageType.IsRegistered, IsRegistered.class);
+		hax.put(MessageType.RegisterBackend, RegisterBackend.class);
+		hax.put(MessageType.RemoveBackend, RemoveBackend.class);
+		hax.put(MessageType.RequestDataPoints, SendDataPoints.class);
 	}
 	
 	/**
@@ -92,9 +123,6 @@ public class GatewayBackendReceiverStrategy extends MessageReceiverStrategy {
 			@Override
 			public void HandleCommand(XMPMessage m) throws JSONException, SQLException, AuthorizationFailureException {
 				requireRegisteredBackend(m);
-				// TODO: find out what data points haven't been sent to this backend yet.
-				
-				// so for each data point, find which ones dont have a message with this target.
 				// this should probably be turned into some huge SQL clusterfuck but here we go...
 				
 				List<XMPDataPoint> unsent = new ArrayList<XMPDataPoint>();
@@ -112,17 +140,27 @@ public class GatewayBackendReceiverStrategy extends MessageReceiverStrategy {
 				}
 				int maxDataPointsPerPacket = XMPConfig.getMaxDataPointsPerPacket();
 
+				logger.info(String.format("Gateway has %d points that %s lacks. Commencing send, %d points per packet",
+						unsent.size(), m.getFrom().getName(), maxDataPointsPerPacket));
+				
+				
 				for (int i = 0; i * maxDataPointsPerPacket < unsent.size(); i++) {
 					XMPMessage response = m.createResponse();
 					response.setType(MessageType.DataPoints);
 					
-					List pts = new ArrayList();
-					for (int j = 0; j < maxDataPointsPerPacket; j++) {
-						XMPDataPoint point = unsent.get(j + maxDataPointsPerPacket * i);
-						pts.add(point);
+					List<XMPDataPoint> pts = new ArrayList<XMPDataPoint>();
+					for (int j = 0; j < maxDataPointsPerPacket; j++) { 
+						try {
+							XMPDataPoint point = unsent.get(j + maxDataPointsPerPacket * i);
+							XMPDb.Nodes.refresh(point.getFrom());
+							pts.add(point);
+						} catch (IndexOutOfBoundsException e) {
+							break;
+						}
 					}
 					response.setContents(pts);
 					
+					main.dispatchRaw(String.format("Sent %d datapoints to %s. %d remaining.", maxDataPointsPerPacket, response.getTarget().getName(), unsent.size() - (i*maxDataPointsPerPacket)));
 					main.dispatch(response);
 				}
 			}

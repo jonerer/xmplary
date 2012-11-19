@@ -1,12 +1,16 @@
-package se.localhost.xmplary;
+package se.localhost.xmplary.xmpback;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 
+import com.j256.ormlite.misc.TransactionManager;
+
+import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
@@ -31,7 +35,7 @@ public class BackendGatewayReceiverStrategy extends MessageReceiverStrategy {
 	HashMap<MessageType, BackendMessageCommandStrategy> handlers = new HashMap<MessageType, BackendMessageCommandStrategy>();
 
 	@Override
-	public void ReceiveMessage(XMPMessage m) {
+	public void ReceiveMessage(XMPMessage m)  {
 		if (m.getFrom().getType() == NodeType.gateway) {
 			if (m.getTarget().equals(XMPNode.getSelf())) {
 				// else, disregard
@@ -54,12 +58,22 @@ public class BackendGatewayReceiverStrategy extends MessageReceiverStrategy {
 	private void registerHandlers() {
 		handlers.put(MessageType.DataPoints, new BackendMessageCommandStrategy() {
 			@Override
-			public void HandleCommand(XMPMessage m) throws JSONException {
-				List<XMPDataPoint> points = (List<XMPDataPoint>) m.getContents();
-				for (XMPDataPoint dataPoint : points) {
-					dataPoint.save();
-					XMPDataPointMessages dpm = new XMPDataPointMessages(dataPoint, m);
-					dpm.save();
+			public void HandleCommand(final XMPMessage m) throws JSONException {
+				final List<XMPDataPoint> points = (List<XMPDataPoint>) m.getContents();
+				try {
+					TransactionManager.callInTransaction(XMPDb.getConnectionSource(), new Callable<Void>() {
+						public Void call() throws Exception {
+							for (XMPDataPoint dataPoint : points) {
+								dataPoint.save();
+								XMPDataPointMessages dpm = new XMPDataPointMessages(dataPoint, m);
+								dpm.save();
+							}
+							return null;
+						}
+					});
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				main.dispatchRaw(String.format("Received %d DataPoints from %s. Thanks for the business, please come again!", points.size(), m.getFrom().getJID()));
 			}

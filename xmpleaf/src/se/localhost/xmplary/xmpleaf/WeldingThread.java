@@ -1,4 +1,4 @@
-package se.localhost.xmplary;
+package se.localhost.xmplary.xmpleaf;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

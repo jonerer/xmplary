@@ -108,7 +108,7 @@ public class XMPDataPoint implements JSONSerializable {
 				contents.put(field, jo.getDouble(field.name()));
 			}
 		}
-		from = XMPNode.getByJID(jo.getString("from"));
+		from = XMPNode.getOrCreateByJID(jo.getString("from"));
 		originalId = jo.getInt("original");
 		try {
 			time = XMPConfig.jsonDateFormat().parse(jo.getString("time"));

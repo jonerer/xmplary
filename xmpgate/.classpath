@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="lib/JSON-java.jar"/>
 	<classpathentry kind="lib" path="lib/ormlite-core-4.42-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="lib/smack.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

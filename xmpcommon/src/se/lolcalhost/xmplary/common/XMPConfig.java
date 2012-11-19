@@ -102,7 +102,7 @@ public class XMPConfig {
 		if (p.contains("MaxDataPointsPerPacket")) {
 			return Integer.valueOf(p.getProperty("MaxDataPointsPerPacket"));
 		} else {
-			return 40;
+			return 120;
 		}
 	}
 }
