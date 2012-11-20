@@ -5,7 +5,8 @@
 <entry key="Full Name">XMPlary node leaf-20</entry>
 <entry key="name">leaf-20</entry>
 <entry key="Domain">SE-GOT-NB-0084</entry>
+<entry key="RoomDomain">conference.se-got-nb-0084</entry>
 <entry key="pass">pass</entry>
 <entry key="type">leaf</entry>
-<entry key="room">yolo@conference.se-got-nb-0084</entry>
+<entry key="room">yolo</entry>
 </properties>

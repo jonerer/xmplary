@@ -1,6 +1,7 @@
 package se.lolcalhost.xmplary.common;
 
 import java.sql.SQLException;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
@@ -12,6 +13,7 @@ import se.lolcalhost.xmplary.common.models.XMPNode;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.misc.TransactionManager;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
@@ -61,11 +63,10 @@ public class XMPDb {
 			}
 		}
 	}
-
-
-	public static ConnectionSource getConnectionSource() {
-		return connectionSource;
+	
+	public static void runAsTransaction(Callable<Void> r) throws SQLException {
+		TransactionManager.callInTransaction(connectionSource, r);
 	}
 
-	
+
 }

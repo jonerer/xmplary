@@ -8,7 +8,9 @@ import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
+import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
+import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 import se.lolcalhost.xmplary.common.strategies.MessageReceiverStrategy;
 
 public class OperatorInputStrategy extends MessageReceiverStrategy {
@@ -47,6 +49,15 @@ public class OperatorInputStrategy extends MessageReceiverStrategy {
 				handleException(e);
 			}
 
+			XMPNode operator = XMPNode.getOperator();
+			if (operator == null) {
+				String opname = p.getFrom().split("@")[0];
+				main.dispatchRaw("No operator registered, registering " + opname + ".");
+				operator = new XMPNode();
+				operator.setType(NodeType.operator);
+				operator.setName(opname);
+				operator.save();
+			}
 			if (handlers.get(c) != null) {
 				handlers.get(c).HandleCommand(m);
 			} else {

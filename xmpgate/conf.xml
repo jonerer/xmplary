@@ -4,8 +4,9 @@
 <comment>comments?</comment>
 <entry key="Full Name">XMPlary node gateway</entry>
 <entry key="name">gateway</entry>
-<entry key="Domain">SE-GOT-NB-0084</entry>
+<entry key="Domain">se-got-nb-0084</entry>
+<entry key="RoomDomain">conference.se-got-nb-0084</entry>
 <entry key="pass">pass</entry>
 <entry key="type">gateway</entry>
-<entry key="room">yolo@conference.se-got-nb-0084</entry>
+<entry key="room">yolo</entry>
 </properties>

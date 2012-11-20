@@ -11,13 +11,15 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 public class GatewayMain extends XMPMain {
 	public GatewayMain() {
 		init();
-		PeriodicUpdatesThread put = new PeriodicUpdatesThread();
 		
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
 		receivers.add(new LoggerReceiverStrategy(this));
 		receivers.add(new GatewayBackendReceiverStrategy(this));
 		receivers.add(new GatewayLeafReceiverStrategy(this));
+
+		PeriodicUpdatesThread put = new PeriodicUpdatesThread(this);
+		put.start();
 		
 		keepRunning();
 	}

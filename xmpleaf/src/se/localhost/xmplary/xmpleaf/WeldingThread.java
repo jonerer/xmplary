@@ -17,6 +17,7 @@ public class WeldingThread extends Thread {
 	private LeafMain main;
 
 	public WeldingThread(LeafMain main) {
+		super("WeldingThread");
 		this.main = main;
 	}
 

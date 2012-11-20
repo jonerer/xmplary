@@ -78,6 +78,9 @@ public class XMPMain {
 			}
 		});
 
+		// start the command runner thread:
+		XMPCommandRunner cmd = new XMPCommandRunner();
+		cmd.start();
 	}
 
 	private void initConf() {

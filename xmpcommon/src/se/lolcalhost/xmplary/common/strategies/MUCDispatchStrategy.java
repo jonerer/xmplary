@@ -18,6 +18,7 @@ import org.jivesoftware.smackx.muc.RoomInfo;
 import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
+import se.lolcalhost.xmplary.common.models.XMPNode;
 
 public class MUCDispatchStrategy extends MessageDispatchStrategy {
 	public static enum MUCRoomStyle {
@@ -28,6 +29,7 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 	private MultiUserChat muc;
 	private Logger logger;
 	private MUCRoomStyle style;
+	private XMPNode room;
 
 	public MUCDispatchStrategy(XMPMain main, MUCRoomStyle style) {
 		super(main);
@@ -41,10 +43,12 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 		if (!hasJoinedMuc) {
 			joinMuc();
 		}
-		if (style == MUCRoomStyle.INPUT_OUTPUT
-				|| style == MUCRoomStyle.ONLY_OUTPUT) {
+		if ((style == MUCRoomStyle.INPUT_OUTPUT
+				|| style == MUCRoomStyle.ONLY_OUTPUT)) {
 			try {
-				muc.sendMessage(mess.getRawContents());
+				if (mess.getTarget().equals(room)) {
+					muc.sendMessage(mess.getRawContents());
+				}
 			} catch (XMPPException e) {
 				logger.error("Couldn't dispatch message to MUC.");
 			}
@@ -69,16 +73,16 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 
 	private void joinMuc() {
 		final Connection con = main.getConnection();
-		String room = XMPConfig.Room();
+		room = XMPNode.getRoom();
 		if (con != null && con.isConnected() && con.isAuthenticated()) {
 			logger.info("Connected to " + con.getServiceName() + " as JID "
 					+ con.getUser());
-			logger.info("Getting room info: " + room);
-			muc = new MultiUserChat(con, room);
+			logger.info("Getting room info: " + room.getJID());
+			muc = new MultiUserChat(con, room.getJID());
 			try {
-				RoomInfo info = MultiUserChat.getRoomInfo(con, room);
+				RoomInfo info = MultiUserChat.getRoomInfo(con, room.getJID());
 			} catch (XMPPException e) {
-				logger.debug("Error 404 room " + room
+				logger.debug("Error 404 room with JID " + room.getJID()
 						+ " doesn't exist. Creating it.");
 				// probably only the gateway should do this.
 				// also docs are at
@@ -122,7 +126,7 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 					// server to configure the room
 					muc.sendConfigurationForm(submitForm);
 				} catch (XMPPException e1) {
-					logger.error("Couldn't create chat room " + room
+					logger.error("Couldn't create chat room " + room.getJID()
 							+ ". Exiting.", e1);
 					System.exit(1);
 				}
@@ -130,8 +134,8 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 			try {
 				muc.join(XMPConfig.Name());
 				// muc.changeSubject(" -- # YOLO --");
-				RoomInfo info2 = MultiUserChat.getRoomInfo(con, room);
-				logger.info("Joining " + room + ". "
+				RoomInfo info2 = MultiUserChat.getRoomInfo(con, room.getJID());
+				logger.info("Joining " + room.getJID() + ". "
 						+ info2.getOccupantsCount() + " occupant(s).");
 				hasJoinedMuc = true;
 				muc.addMessageListener(new PacketListener() {
@@ -152,7 +156,7 @@ public class MUCDispatchStrategy extends MessageDispatchStrategy {
 					}
 				});
 			} catch (XMPPException e) {
-				logger.debug("Couldn't join room " + room, e);
+				logger.debug("Couldn't join room " + room.getJID(), e);
 			}
 
 		}

@@ -54,6 +54,13 @@ public class XMPDataPoint implements JSONSerializable {
 	@DatabaseField(canBeNull = false, columnName = TIME)
 	private Date time;
 
+	// a denormalization-thing to speed up updates significantly.
+	// is invalidated once a new backend connects.
+	public static final String SENT_TO_ALL = "sent_to_all_backends";
+	@DatabaseField(canBeNull = false, columnName = SENT_TO_ALL)
+	private boolean sentToAll;
+
+	
 	public XMPDataPoint() {
 		from = XMPNode.getSelf();
 		time = new Date();
@@ -134,6 +141,14 @@ public class XMPDataPoint implements JSONSerializable {
 		} catch (SQLException e) {
 			logger.error("Couldn't save xmp data point into DB.", e);
 		}
+	}
+
+	public boolean isSentToAll() {
+		return sentToAll;
+	}
+
+	public void setSentToAll(boolean sentToAll) {
+		this.sentToAll = sentToAll;
 	}
 
 }

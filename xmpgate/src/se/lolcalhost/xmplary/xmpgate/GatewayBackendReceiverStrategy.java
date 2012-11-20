@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import se.lolcalhost.xmplary.common.XMPCommandRunner;
 import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
@@ -52,13 +53,7 @@ public class GatewayBackendReceiverStrategy extends MessageReceiverStrategy {
 					Class<? extends Command> c = hax.get(m.getType());
 					Constructor<? extends Command> con = c.getConstructor(XMPMain.class, XMPMessage.class);
 					Command command = con.newInstance(main, m);
-					command.execute();
-				} catch (JSONException e) {
-					logger.error("Error in gateway backend reciever handler: ", e);
-				} catch (SQLException e) {
-					logger.error("Error in gateway backend reciever handler: ", e);
-				} catch (AuthorizationFailureException e) {
-					logger.error("Error in gateway backend reciever handler: ", e);
+					command.schedule();
 				} catch (SecurityException e) {
 					logger.error("Error in gateway backend reciever handler: ", e);
 				} catch (NoSuchMethodException e) {

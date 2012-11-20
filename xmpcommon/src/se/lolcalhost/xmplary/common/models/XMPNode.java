@@ -1,6 +1,7 @@
 package se.lolcalhost.xmplary.common.models;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -19,6 +20,7 @@ public class XMPNode {
 		leaf,
 		backend,
 		operator,
+		chatroom,
 		unknown
 	}
 
@@ -27,15 +29,15 @@ public class XMPNode {
 	private int id;
 
 
-	private static final String NAME = "name";
+	public static final String NAME = "name";
 	@DatabaseField(canBeNull = false, columnName = NAME)
 	private String name;
 	
-	private static final String REGISTERED = "registered";
+	public static final String REGISTERED = "registered";
 	@DatabaseField(canBeNull = false, columnName = REGISTERED)
 	private boolean registered = false;
 	
-	private static final String TYPE = "type";
+	public static final String TYPE = "type";
 	@DatabaseField(canBeNull = false, columnName = TYPE)
 	private NodeType type;
 	
@@ -66,7 +68,12 @@ public class XMPNode {
 	}
 
 	public String getJID() {
-		return name + "@" + XMPConfig.Domain() + "/Smack";
+		if (type != NodeType.chatroom) {
+			return name + "@" + XMPConfig.Domain() + "/Smack";
+		} else {
+			return name + "@" + XMPConfig.RoomDomain() + "";
+
+		}
 	}
 
 	public int getId() {
@@ -106,6 +113,50 @@ public class XMPNode {
 			}
 		}
 		return self;
+	}
+	
+	private static XMPNode operator = null;
+	public static XMPNode getOperator() {
+		if (operator == null) {
+			try {
+				List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(TYPE, NodeType.operator);
+				if (queryForEq.size() != 0) {
+					operator = queryForEq.get(0);
+				}
+			} catch (SQLException e) {
+				handleException(e);
+			}
+		}
+		return operator;
+	}
+	
+	private static XMPNode room = null;
+	public static XMPNode getRoom() {
+		if (room == null) {
+			try {
+				List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(NAME, XMPConfig.Room());
+				if (queryForEq.isEmpty()) {
+					logger.info("Self not found in database. Creating...");
+					room = new XMPNode();
+					room.setName(XMPConfig.Room());
+					room.setType(NodeType.chatroom);
+					room.save();
+				} else {
+					room = queryForEq.get(0);
+				}
+			} catch (SQLException e) {
+				handleException(e);
+			}
+		}
+		return room;
+	}
+
+	public void save() {
+		try {
+			XMPDb.Nodes.createOrUpdate(this);
+		} catch (SQLException e) {
+			logger.error("Couldn't save node-connection: ", e);
+		}
 	}
 
 	private static void handleException(SQLException e) {
@@ -193,7 +244,7 @@ public class XMPNode {
 	}
 	
 	public boolean equals(Object o) {
-		return o.getClass().equals(XMPNode.class) && ((XMPNode) o).getJID().equals(getJID());
+		return o.getClass().equals(XMPNode.class) && ((XMPNode) o).getId() == id;
 	}
 
 	public static XMPNode getOrCreateByJID(String string) {
@@ -202,6 +253,30 @@ public class XMPNode {
 			node = createByJID(string);
 		}
 		return node;
+	}
+	
+	public List<XMPDataPoint> getUnsentDataPoints() throws SQLException {
+		if (type != NodeType.backend) {
+			throw new IllegalArgumentException();
+		}
+		List<XMPDataPoint> unsent = new ArrayList<XMPDataPoint>();
+		for (XMPDataPoint point : XMPDb.DataPoints.queryForEq(XMPDataPoint.SENT_TO_ALL, false)) {
+			boolean hasBeenSent = false;
+			for (XMPMessage message : XMPDataPointMessages.messagesForPoint(point)) {
+				if (message.getTarget().equals(this)) {
+					hasBeenSent = true;
+					break;
+				}
+			}
+			if (!hasBeenSent) {
+				unsent.add(point);
+			}
+		}
+		return unsent;
+	}
+
+	public static List<XMPNode> getRegisteredBackends() throws SQLException {
+		return XMPDb.Nodes.queryBuilder().where().eq(TYPE, NodeType.backend).and().eq(REGISTERED, true).query();
 	}
 
 }

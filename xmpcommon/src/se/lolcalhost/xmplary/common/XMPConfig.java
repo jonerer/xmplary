@@ -31,6 +31,10 @@ public class XMPConfig {
 		return p.getProperty("Domain");
 	}
 	
+	public static String RoomDomain() {
+		return p.getProperty("RoomDomain");
+	}
+	
 	public static String Room() {
 		return p.getProperty("room");
 	}
@@ -102,7 +106,7 @@ public class XMPConfig {
 		if (p.contains("MaxDataPointsPerPacket")) {
 			return Integer.valueOf(p.getProperty("MaxDataPointsPerPacket"));
 		} else {
-			return 120;
+			return 240;
 		}
 	}
 }
