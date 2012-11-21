@@ -49,6 +49,7 @@ public class SendDataPoints extends Command {
 				.format("Gateway has %d points that %s lacks. Commencing send, %d points per packet",
 						unsent.size(), target.getName(), maxDataPointsPerPacket));
 
+		int sent = 0;
 		for (int i = 0; i * maxDataPointsPerPacket < unsent.size(); i++) {
 			final XMPMessage response = new XMPMessage(MessageType.DataPoints);
 			response.setTarget(target);
@@ -61,6 +62,7 @@ public class SendDataPoints extends Command {
 							* i);
 					XMPDb.Nodes.refresh(point.getFrom());
 					pts.add(point);
+					sent++;
 				} catch (IndexOutOfBoundsException e) {
 					break;
 				}
@@ -69,8 +71,8 @@ public class SendDataPoints extends Command {
 
 			main.dispatchRaw(String.format(
 					"Sent %d datapoints to %s. %d remaining.",
-					maxDataPointsPerPacket, response.getTarget().getName(),
-					unsent.size() - (i * maxDataPointsPerPacket)));
+					pts.size(), response.getTarget().getName(),
+					unsent.size() - sent));
 			main.dispatch(response);
 
 			// 1. save in the database that it has been sent to this backend.
@@ -118,16 +120,6 @@ public class SendDataPoints extends Command {
 					return null;
 				}
 			});
-
-		}
-
-	}
-
-	private void requireRegisteredBackend(XMPNode node)
-			throws AuthorizationFailureException {
-		if (node.getType() != NodeType.backend || !node.isRegistered()) {
-			throw new AuthorizationFailureException();
 		}
 	}
-
 }

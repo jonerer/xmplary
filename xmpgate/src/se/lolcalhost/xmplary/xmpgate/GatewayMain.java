@@ -10,7 +10,7 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 
 public class GatewayMain extends XMPMain {
 	public GatewayMain() {
-		init();
+		super();
 		
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));

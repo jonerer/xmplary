@@ -151,4 +151,12 @@ public class XMPDataPoint implements JSONSerializable {
 		this.sentToAll = sentToAll;
 	}
 
+	public Date getTime() {
+		return time;
+	}
+
+	public void setTime(Date time) {
+		this.time = time;
+	}
+
 }

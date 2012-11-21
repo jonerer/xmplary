@@ -19,10 +19,11 @@ public class XMPConfig {
 	private static Properties p;
 	private static File f;
 	static Logger logger = Logger.getLogger(XMPConfig.class);
+	private static String conffile;
 	
 	public static Properties getInstance() {
 		if (p == null) {
-			init();
+			init("conf.xml");
 		}
 		return p;
 	}
@@ -33,6 +34,10 @@ public class XMPConfig {
 	
 	public static String RoomDomain() {
 		return p.getProperty("RoomDomain");
+	}
+	
+	public static String Database() {
+		return p.getProperty("database");
 	}
 	
 	public static String Room() {
@@ -51,8 +56,10 @@ public class XMPConfig {
 		return DateFormat.getDateTimeInstance();
 	}
 
-	private static void init() {
-		f = new File("conf.xml");
+	private static void init(String conffile) {
+		XMPConfig.conffile = conffile;
+		
+		f = new File(conffile);
 		p = new Properties();
 		if (f.exists()) {
 			FileInputStream fis = null;

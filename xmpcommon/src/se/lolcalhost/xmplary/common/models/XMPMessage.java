@@ -27,6 +27,8 @@ public class XMPMessage implements JSONSerializable {
 
 		DebugText, DataPoints, RequestDataPoints
 	}
+	
+	public static MessageType[] MulticastTypes = { MessageType.Alarm };
 
 	protected static Logger logger = Logger.getLogger(XMPMessage.class);
 
@@ -52,6 +54,10 @@ public class XMPMessage implements JSONSerializable {
 	public static final String FROM = "from";
 	@DatabaseField(canBeNull = false, columnName = FROM, foreign = true)
 	private XMPNode from;
+	
+	public static final String ORIGIN = "origin";
+	@DatabaseField(canBeNull = false, columnName = ORIGIN, foreign = true)
+	private XMPNode origin;
 
 	public static final String OUTGOING = "outgoing";
 	@DatabaseField(canBeNull = false, columnName = OUTGOING)
@@ -60,7 +66,11 @@ public class XMPMessage implements JSONSerializable {
 	public static final String DELIVERED = "delivered";
 	@DatabaseField(canBeNull = false, columnName = DELIVERED)
 	private boolean delivered;
-
+	
+	public static final String SIGNATURE = "signature";
+	@DatabaseField(canBeNull = true, columnName = SIGNATURE)
+	private String signature = "";
+	
 	// protected List<HashMap<DataPointField, Float>> dataPoints = new
 	// ArrayList<HashMap<DataPointField,Float>>();
 	// TODO: is there a change between sent and acknowledged?
@@ -68,6 +78,7 @@ public class XMPMessage implements JSONSerializable {
 	public XMPMessage() {
 		from = XMPNode.getSelf(); // default is to send from self.
 		target = XMPNode.getGateway(); // default is to send to gateway.
+		origin = XMPNode.getSelf();
 	}
 
 	public XMPMessage(MessageType mt) {
@@ -192,8 +203,7 @@ public class XMPMessage implements JSONSerializable {
 				JSONArray ar = new JSONArray();
 				for (Object o : (List<?>) contents) {
 					JSONObject jo = new JSONObject();
-					((JSONSerializable) o).writeObject(jo); // TODO: should this put things into DB as well?
-
+					((JSONSerializable) o).writeObject(jo);
 					ar.put(jo);
 				}
 				this.contents = ar.toString();
@@ -222,31 +232,30 @@ public class XMPMessage implements JSONSerializable {
 			stream.put("contents", contents);
 
 			stream.put("type", type.toString());
+			
+			stream.put("origin", origin.getName());
+			
+			stream.put("signature", signature);
 
-//			if (type == MessageType.DataPoints) {
-//				// add all related datapoints (as JSONObjects)
-//				JSONArray ja = new JSONArray();
-//				List<XMPDataPoint> queryForEq = XMPDataPointMessages
-//						.pointsForMessage(this);
-//				for (XMPDataPoint xmpDataPoint : queryForEq) {
-//					JSONObject jo = new JSONObject();
-//					xmpDataPoint.writeObject(jo);
-//					ja.put(jo);
-//				}
-//				stream.put("contents", ja.toString());
-//			}
 		} catch (JSONException e) {
 			logger.error("Unable to serialize xmp message: ", e);
 		} 
-//		catch (SQLException e) {
-//			logger.error("Unable to serialize xmp message: ", e);
-//		}
 	}
 
 	public void readObject(JSONObject stream) throws JSONException {
 		type = MessageType.valueOf(stream.getString("type"));
+		String string = stream.getString("origin");
+		origin = XMPNode.getByJID(string);
+		if (origin == null) {
+			origin = XMPNode.createByJID(string);
+		}
+		signature = stream.getString("signature");
 	}
-
+	
+	public void sign() {
+		signature = "sign_of_" + id + " by " + from.getName();
+	}
+	
 	public JSONObject asJSONObject() {
 		JSONObject json = new JSONObject();
 		writeObject(json);
@@ -263,6 +272,25 @@ public class XMPMessage implements JSONSerializable {
 		} catch (SQLException e) {
 			logger.error("Couldn't save xmp message into DB.", e);
 		}
+	}
+	
+	public boolean isMulticast() {
+		boolean isMulticast = false;
+		for (int i = 0; i < MulticastTypes.length; i++) {
+			MessageType typez = MulticastTypes[i];
+			if (type == typez) {
+				isMulticast = true;
+			}
+		}
+		return isMulticast;
+	}
+
+	public XMPNode getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(XMPNode origin) {
+		this.origin = origin;
 	}
 
 }

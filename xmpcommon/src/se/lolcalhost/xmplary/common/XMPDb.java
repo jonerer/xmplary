@@ -32,7 +32,7 @@ public class XMPDb {
 		} catch (ClassNotFoundException e1) {
 			e1.printStackTrace();
 		}
-		String databaseUrl = "jdbc:sqlite:database.db";
+		String databaseUrl = "jdbc:sqlite:" + XMPConfig.Database();
 		try {
 			connectionSource = new JdbcConnectionSource(databaseUrl);
 
@@ -42,7 +42,6 @@ public class XMPDb {
 			DataPoints = DaoManager.createDao(connectionSource, XMPDataPoint.class);
 			DataPointMessages = DaoManager.createDao(connectionSource, XMPDataPointMessages.class);
 	
-			// if you need to create the 'accounts' table make this call
 			TableUtils.createTableIfNotExists(connectionSource, XMPNode.class);
 			TableUtils.createTableIfNotExists(connectionSource, XMPMessage.class);
 			TableUtils.createTableIfNotExists(connectionSource, XMPDataPoint.class);

@@ -9,4 +9,5 @@
 <entry key="pass">pass</entry>
 <entry key="type">gateway</entry>
 <entry key="room">yolo</entry>
+<entry key="database">database.db</entry>
 </properties>

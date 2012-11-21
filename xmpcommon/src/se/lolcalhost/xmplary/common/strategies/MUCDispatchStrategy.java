@@ -20,7 +20,7 @@ import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
 
-public class MUCDispatchStrategy extends MessageDispatchStrategy {
+public class MUCDispatchStrategy extends AbstractMessageDispatchStrategy {
 	public static enum MUCRoomStyle {
 		INPUT_OUTPUT, ONLY_INPUT, ONLY_OUTPUT
 	}

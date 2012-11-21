@@ -18,8 +18,9 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 import se.lolcalhost.xmplary.common.models.XMPMessage;
-import se.lolcalhost.xmplary.common.strategies.MessageDispatchStrategy;
-import se.lolcalhost.xmplary.common.strategies.MessageReceiverStrategy;
+import se.lolcalhost.xmplary.common.strategies.AbstractMessageDispatchStrategy;
+import se.lolcalhost.xmplary.common.strategies.AbstractMessageReceiverStrategy;
+import se.lolcalhost.xmplary.common.strategies.IMessageReceiverStrategy;
 
 public class XMPMain {
 	protected static Logger logger = Logger.getLogger(XMPMain.class);
@@ -27,10 +28,10 @@ public class XMPMain {
 	private Connection connection;
 	boolean keepRunning = true;
 
-	protected ArrayList<MessageDispatchStrategy> dispatchers = new ArrayList<MessageDispatchStrategy>();
-	protected ArrayList<MessageReceiverStrategy> receivers = new ArrayList<MessageReceiverStrategy>();
+	protected ArrayList<AbstractMessageDispatchStrategy> dispatchers = new ArrayList<AbstractMessageDispatchStrategy>();
+	protected ArrayList<IMessageReceiverStrategy> receivers = new ArrayList<IMessageReceiverStrategy>();
 
-	protected void init() {
+	protected XMPMain() {
 		PropertyConfigurator.configure("../xmpcommon/log4j.properties"); // initialize
 																			// log4j
 		XMPDb.init();
@@ -136,14 +137,14 @@ public class XMPMain {
 		} catch (SQLException e) {
 			logger.error("Tried to save xmp message before sending it. Failed.");
 		}
-		for (MessageDispatchStrategy dispatcher : dispatchers) {
+		for (AbstractMessageDispatchStrategy dispatcher : dispatchers) {
 			dispatcher.DispatchMessage(xmp);
 		}
 	}
 
 	public void dispatchRaw(String xmp) {
 		// TODO: here is where to sign stuff.
-		for (MessageDispatchStrategy dispatcher : dispatchers) {
+		for (AbstractMessageDispatchStrategy dispatcher : dispatchers) {
 			dispatcher.DispatchRawMessage(xmp);
 		}
 	}
@@ -157,7 +158,7 @@ public class XMPMain {
 	public void receiveMessage(Message message) {
 		// TODO: here is where to check the integrity of stuff, and stuff's
 		// sender
-		for (MessageReceiverStrategy receiver : receivers) {
+		for (IMessageReceiverStrategy receiver : receivers) {
 			receiver.PreparseReceiveMessage(message);
 		}
 
@@ -168,7 +169,7 @@ public class XMPMain {
 		msg.save();
 
 		if (msg != null) {
-			for (MessageReceiverStrategy receiver : receivers) {
+			for (IMessageReceiverStrategy receiver : receivers) {
 				receiver.ReceiveMessage(msg);
 
 			}

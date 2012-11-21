@@ -3,22 +3,21 @@ package se.localhost.xmplary.xmpback;
 import java.util.HashMap;
 
 import org.jivesoftware.smack.packet.Message;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
-import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
+import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
-import se.lolcalhost.xmplary.common.strategies.MessageReceiverStrategy;
+import se.lolcalhost.xmplary.common.strategies.IMessageReceiverStrategy;
 
-public class OperatorInputStrategy extends MessageReceiverStrategy {
+public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	public interface InputCommandStrategy {
 		public void HandleCommand(Message m);
 	}
 
 	HashMap<OperatorCommand, InputCommandStrategy> handlers = new HashMap<OperatorCommand, InputCommandStrategy>();
+	private XMPMain main;
 
 	public enum OperatorCommand {
 		IsRegistered, 
@@ -32,7 +31,7 @@ public class OperatorInputStrategy extends MessageReceiverStrategy {
 	}
 
 	public OperatorInputStrategy(XMPMain main) {
-		super(main);
+		this.main = main;
 		addHandlers();
 	}
 

@@ -7,7 +7,7 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 
 public class LeafMain extends XMPMain {
 	public LeafMain() {
-		init();
+		super();
 		WeldingThread wt = new WeldingThread(this);
 		wt.start();
 

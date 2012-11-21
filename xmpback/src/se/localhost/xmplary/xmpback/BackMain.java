@@ -8,7 +8,7 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 public class BackMain extends XMPMain {
 	
 	public BackMain() {
-		init();
+		super();
 
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.INPUT_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));

@@ -13,7 +13,7 @@ import org.json.JSONException;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 
-public class ChatDispatchStrategy extends MessageDispatchStrategy {
+public class ChatDispatchStrategy extends AbstractMessageDispatchStrategy {
 	private boolean hasJoinedChat = false;
 	private MultiUserChat muc;
 	private Logger logger;

@@ -1,12 +1,11 @@
 package se.localhost.xmplary.xmpleaf;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
@@ -25,9 +24,9 @@ public class WeldingThread extends Thread {
 	public void run() {
 		Random r = new Random();
 		while (true) {
-			if (r.nextFloat() < 0.1) {
+			if (r.nextFloat() < 0.5) {
 				XMPMessage msg = new XMPMessage();
-				msg.setContents("TEMPERATURE HIGH");
+				msg.setContents("Temperature High");
 				msg.setType(MessageType.Alarm);
 				main.dispatch(msg);
 				// main.pushMessage(" -- ALARM: TEMPERATURE HIGH --");

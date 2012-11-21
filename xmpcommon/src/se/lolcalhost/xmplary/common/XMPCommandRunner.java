@@ -2,7 +2,7 @@ package se.lolcalhost.xmplary.common;
 
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -27,7 +27,7 @@ public class XMPCommandRunner extends Thread {
 		super("XMPCommandRunner");
 	}
 
-	static BlockingQueue<Command> queue = new LinkedBlockingQueue<Command>();
+	static BlockingQueue<Command> queue = new PriorityBlockingQueue<Command>();
 	/**
 	 * Schedule a command to be run.
 	 * 
