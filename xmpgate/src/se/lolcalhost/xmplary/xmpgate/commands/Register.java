@@ -12,9 +12,10 @@ import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
+import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 
-public class RegisterBackend extends Command {
-	public RegisterBackend(XMPMain main, XMPMessage msg) {
+public class Register extends Command {
+	public Register(XMPMain main, XMPMessage msg) {
 		super(main, msg);
 		// TODO Auto-generated constructor stub
 	}
@@ -26,22 +27,28 @@ public class RegisterBackend extends Command {
 		from.setRegistered(true); // TODO: some kind of validation here, yeah? :p
 		XMPDb.Nodes.update(from);
 		
-		XMPDb.runAsTransaction(new Callable<Void>() {
-			@Override
-			public Void call() throws Exception {
-				for (XMPDataPoint datapoint : XMPDb.DataPoints.queryForAll()) {
-					datapoint.setSentToAll(false);
-					XMPDb.DataPoints.update(datapoint);
+		if (from.getType() == NodeType.backend) {
+			XMPDb.runAsTransaction(new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					for (XMPDataPoint datapoint : XMPDb.DataPoints.queryForAll()) {
+						datapoint.setSentToAll(false);
+						XMPDb.DataPoints.update(datapoint);
+					}
+					return null;
 				}
-				return null;
-			}
-		});
-		logger.info("New backend registered. Invalidated all SENT_TO_ALL on datapoints.");
-		// make sure senddatapoints uses them.
-		// make sure xmpnode.unsentDataPoints uses it.
+			});
+			logger.info("New backend registered. Invalidated all SENT_TO_ALL on datapoints. Also scheduling a datapoint-send.");
+			SendDataPoints sdp = new SendDataPoints(main, from);
+			sdp.schedule();
+			SendAlarmBacklog ala = new SendAlarmBacklog(main, from);
+			ala.schedule();
+		} else {
+			logger.info("New " + from.getType().name() + " registered.");
+		}
 		
 		response.setContents(new JSONObject().put("IsRegistered", msg.getFrom().isRegistered()));
-		main.dispatch(response);
+		response.send();
 	}
 
 }

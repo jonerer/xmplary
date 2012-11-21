@@ -56,7 +56,7 @@ public class XMPConfig {
 		return DateFormat.getDateTimeInstance();
 	}
 
-	private static void init(String conffile) {
+	static void init(String conffile) {
 		XMPConfig.conffile = conffile;
 		
 		f = new File(conffile);

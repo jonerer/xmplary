@@ -12,8 +12,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.lolcalhost.xmplary.common.XMPDb;
+import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
-import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -23,7 +23,7 @@ public class XMPMessage implements JSONSerializable {
 	public static enum MessageType {
 		Alarm,
 
-		IsRegistered, RegisterBackend, RemoveBackend,
+		IsRegistered, Register, Unregister, RegistrationRequest,
 
 		DebugText, DataPoints, RequestDataPoints
 	}
@@ -70,6 +70,8 @@ public class XMPMessage implements JSONSerializable {
 	public static final String SIGNATURE = "signature";
 	@DatabaseField(canBeNull = true, columnName = SIGNATURE)
 	private String signature = "";
+
+	private static XMPMain main;
 	
 	// protected List<HashMap<DataPointField, Float>> dataPoints = new
 	// ArrayList<HashMap<DataPointField,Float>>();
@@ -291,6 +293,32 @@ public class XMPMessage implements JSONSerializable {
 
 	public void setOrigin(XMPNode origin) {
 		this.origin = origin;
+	}
+
+	public static List<XMPMessage> getAlarms() {
+		try {
+			return XMPDb.Messages.queryForEq(TYPE, MessageType.Alarm);
+		} catch (SQLException e) {
+			logger.error("Unable to get alarm list: " + e);
+		}
+		return new ArrayList<XMPMessage>();
+	}
+
+	public void forwardTo(XMPNode destination) {
+		XMPMessage msg = new XMPMessage(type);
+		msg.setOrigin(origin);
+		msg.setContents(contents);
+		msg.setTarget(destination);
+		msg.save();
+		msg.send();
+	}
+	
+	public void send() {
+		main.dispatch(this);
+	}
+
+	public static void setMain(XMPMain main) {
+		XMPMessage.main = main;
 	}
 
 }

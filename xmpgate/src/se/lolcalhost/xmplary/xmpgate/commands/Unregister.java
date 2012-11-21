@@ -11,9 +11,9 @@ import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
 
-public class RemoveBackend extends Command {
+public class Unregister extends Command {
 
-	public RemoveBackend(XMPMain main, XMPMessage msg) {
+	public Unregister(XMPMain main, XMPMessage msg) {
 		super(main, msg);
 		// TODO Auto-generated constructor stub
 	}
@@ -26,7 +26,7 @@ public class RemoveBackend extends Command {
 		XMPDb.Nodes.update(from);
 		
 		response.setContents(new JSONObject().put("IsRegistered", msg.getFrom().isRegistered()));
-		main.dispatch(response);
+		response.send();
 	}
 
 }

@@ -19,23 +19,26 @@ import org.jivesoftware.smack.packet.Presence;
 
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.strategies.AbstractMessageDispatchStrategy;
-import se.lolcalhost.xmplary.common.strategies.AbstractMessageReceiverStrategy;
 import se.lolcalhost.xmplary.common.strategies.IMessageReceiverStrategy;
 
 public class XMPMain {
 	protected static Logger logger = Logger.getLogger(XMPMain.class);
-	protected Properties p = XMPConfig.getInstance();
+	protected Properties p;
 	private Connection connection;
 	boolean keepRunning = true;
 
 	protected ArrayList<AbstractMessageDispatchStrategy> dispatchers = new ArrayList<AbstractMessageDispatchStrategy>();
 	protected ArrayList<IMessageReceiverStrategy> receivers = new ArrayList<IMessageReceiverStrategy>();
 
-	protected XMPMain() {
+	
+	
+	protected XMPMain(String config) {
 		PropertyConfigurator.configure("../xmpcommon/log4j.properties"); // initialize
 																			// log4j
+		XMPConfig.init(config);
+		p = XMPConfig.getInstance();
 		XMPDb.init();
-		initConf();
+		XMPMessage.setMain(this);
 
 		connection = new XMPPConnection(p.getProperty("Domain"));
 		try {
@@ -84,10 +87,6 @@ public class XMPMain {
 		cmd.start();
 	}
 
-	private void initConf() {
-		XMPConfig.getInstance();
-	}
-
 	protected void create(String name, String pass) {
 		try {
 			connection.getAccountManager().createAccount(name, pass);
@@ -127,6 +126,12 @@ public class XMPMain {
 		}
 	}
 
+	/**
+	 * Dispatch a message. This function is available via the XMPMessage.send() comfortability function.
+	 * So you probably wont have to call this one directly.
+	 * 
+	 * @param xmp
+	 */
 	public void dispatch(XMPMessage xmp) {
 		// TODO: here is where to sign stuff.
 		try {
@@ -171,7 +176,6 @@ public class XMPMain {
 		if (msg != null) {
 			for (IMessageReceiverStrategy receiver : receivers) {
 				receiver.ReceiveMessage(msg);
-
 			}
 		}
 	}
@@ -182,6 +186,10 @@ public class XMPMain {
 
 	public void setConnection(Connection connection) {
 		this.connection = connection;
+	}
+	
+	protected void attemptRegistration() {
+		// TODO.
 	}
 
 }

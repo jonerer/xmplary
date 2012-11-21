@@ -16,7 +16,7 @@ public class IsRegistered extends Command {
 	public void execute() throws JSONException {
 		XMPMessage response = msg.createResponse();
 		response.setContents(new JSONObject().put("IsRegistered", msg.getFrom().isRegistered()));
-		main.dispatch(response);
+		response.send();
 	}
 
 }

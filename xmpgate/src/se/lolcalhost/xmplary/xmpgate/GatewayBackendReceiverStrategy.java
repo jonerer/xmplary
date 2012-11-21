@@ -5,8 +5,8 @@ import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 import se.lolcalhost.xmplary.common.strategies.AbstractMessageReceiverStrategy;
 import se.lolcalhost.xmplary.xmpgate.commands.IsRegistered;
-import se.lolcalhost.xmplary.xmpgate.commands.RegisterBackend;
-import se.lolcalhost.xmplary.xmpgate.commands.RemoveBackend;
+import se.lolcalhost.xmplary.xmpgate.commands.Register;
+import se.lolcalhost.xmplary.xmpgate.commands.Unregister;
 import se.lolcalhost.xmplary.xmpgate.commands.SendDataPoints;
 
 public class GatewayBackendReceiverStrategy extends AbstractMessageReceiverStrategy {
@@ -17,8 +17,8 @@ public class GatewayBackendReceiverStrategy extends AbstractMessageReceiverStrat
 	@Override
 	protected void registerHandlers() {
 		handlerClasses.put(MessageType.IsRegistered, IsRegistered.class);
-		handlerClasses.put(MessageType.RegisterBackend, RegisterBackend.class);
-		handlerClasses.put(MessageType.RemoveBackend, RemoveBackend.class);
+		handlerClasses.put(MessageType.Register, Register.class);
+		handlerClasses.put(MessageType.Unregister, Unregister.class);
 		handlerClasses.put(MessageType.RequestDataPoints, SendDataPoints.class);
 	}
 	

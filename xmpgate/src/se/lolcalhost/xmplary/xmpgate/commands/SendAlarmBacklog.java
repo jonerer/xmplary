@@ -10,22 +10,28 @@ import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
 
-public class MulticastToBackends extends Command {
+public class SendAlarmBacklog extends Command {
 
-	public MulticastToBackends(XMPMain main, XMPMessage msg) {
+	private XMPNode from;
+
+	public SendAlarmBacklog(XMPMain main, XMPMessage msg) {
 		super(main, msg);
+		setPriority(CommandPriority.LOW);
+		from = msg.getFrom();
+	}
+
+	public SendAlarmBacklog(XMPMain main, XMPNode from) {
+		super(main, null);
+		setPriority(CommandPriority.LOW);
+		this.from = from;
 	}
 
 	@Override
 	public void execute() throws JSONException, SQLException,
 			AuthorizationFailureException {
-		for (XMPNode backend : XMPNode.getRegisteredBackends()) {
-			XMPMessage forward = new XMPMessage(msg.getType());
-			forward.setTarget(backend);
-			forward.setOrigin(msg.getOrigin());
-			forward.setContents(msg.getContents());
-			forward.send();
+		for (XMPMessage warning : XMPMessage.getAlarms()) {
+			warning.forwardTo(from);
 		}
 	}
-	
+
 }

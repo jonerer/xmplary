@@ -73,7 +73,7 @@ public class SendDataPoints extends Command {
 					"Sent %d datapoints to %s. %d remaining.",
 					pts.size(), response.getTarget().getName(),
 					unsent.size() - sent));
-			main.dispatch(response);
+			response.send();
 
 			// 1. save in the database that it has been sent to this backend.
 			XMPDb.runAsTransaction(new Callable<Void>() {

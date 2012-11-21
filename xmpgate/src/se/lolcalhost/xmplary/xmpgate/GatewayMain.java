@@ -9,8 +9,8 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 
 public class GatewayMain extends XMPMain {
-	public GatewayMain() {
-		super();
+	public GatewayMain(String conf) {
+		super(conf);
 		
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
@@ -31,7 +31,11 @@ public class GatewayMain extends XMPMain {
 	 */
 	public static void main(String[] args) throws XMPPException,
 			InterruptedException {
-		new GatewayMain();
+		String conf = "conf.xml";
+		if (args.length > 0) {
+			conf = args[0];
+		}
+		new GatewayMain(conf);
 	}
 
 }

@@ -6,13 +6,16 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 
 public class LeafMain extends XMPMain {
-	public LeafMain() {
-		super();
+	public LeafMain(String config) {
+		super(config);
+
 		WeldingThread wt = new WeldingThread(this);
 		wt.start();
 
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
+		
+		attemptRegistration();
 
 		keepRunning();
 	}
@@ -21,8 +24,11 @@ public class LeafMain extends XMPMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		new LeafMain();
+		String conf = "conf.xml";
+		if (args.length > 0) {
+			conf = args[0];
+		}
+		new LeafMain(conf);
 	}
 
 }

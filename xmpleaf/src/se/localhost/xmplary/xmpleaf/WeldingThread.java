@@ -24,11 +24,11 @@ public class WeldingThread extends Thread {
 	public void run() {
 		Random r = new Random();
 		while (true) {
-			if (r.nextFloat() < 0.5) {
+			if (r.nextFloat() < 0.1) {
 				XMPMessage msg = new XMPMessage();
 				msg.setContents("Temperature High");
 				msg.setType(MessageType.Alarm);
-				main.dispatch(msg);
+				msg.send();
 				// main.pushMessage(" -- ALARM: TEMPERATURE HIGH --");
 			} else {
 				// create a message to send
@@ -53,7 +53,7 @@ public class WeldingThread extends Thread {
 				}
 
 				msg.setContents(l);
-				main.dispatch(msg);
+				msg.send();
 			}
 			// main.pushMessage("Welding data: " + newVal);
 			try {

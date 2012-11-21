@@ -73,8 +73,8 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	public void ReceiveMessage(XMPMessage m) {
 		switch (m.getType()) {
 		case IsRegistered:
-		case RegisterBackend:
-		case RemoveBackend:
+		case Register:
+		case Unregister:
 			main.dispatchRaw("Is registered? " + m.getRawContents());
 			break;
 		default:
@@ -94,35 +94,28 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 			@Override
 			public void HandleCommand(Message m) {
 				main.dispatchRaw("Ok let me find out... ");
-				main.dispatch(new XMPMessage(MessageType.IsRegistered));
+				new XMPMessage(MessageType.IsRegistered).send();
 			}
 		});
 		handlers.put(OperatorCommand.Register, new InputCommandStrategy() {
 			@Override
 			public void HandleCommand(Message m) {
 				main.dispatchRaw("I'm on it... ");
-				main.dispatch(new XMPMessage(MessageType.RegisterBackend));
+				new XMPMessage(MessageType.Register).send();
 			}
 		});
 		handlers.put(OperatorCommand.RequestDataPoints, new InputCommandStrategy() {
 			@Override
 			public void HandleCommand(Message m) {
 				main.dispatchRaw("I'm on it... ");
-				main.dispatch(new XMPMessage(MessageType.RequestDataPoints));
+				new XMPMessage(MessageType.RequestDataPoints).send();
 			}
 		});
 		handlers.put(OperatorCommand.Unregister, new InputCommandStrategy() {
 			@Override
 			public void HandleCommand(Message m) {
 				main.dispatchRaw("I'm on it... ");
-				main.dispatch(new XMPMessage(MessageType.RemoveBackend));
-			}
-		});
-		handlers.put(OperatorCommand.Unregister, new InputCommandStrategy() {
-			@Override
-			public void HandleCommand(Message m) {
-				main.dispatchRaw("I'm on it... ");
-				main.dispatch(new XMPMessage(MessageType.RemoveBackend));
+				new XMPMessage(MessageType.Unregister).send();
 			}
 		});
 		handlers.put(OperatorCommand.Echo, new InputCommandStrategy() {
