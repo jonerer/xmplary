@@ -1,7 +1,5 @@
 package se.lolcalhost.xmplary.common.strategies;
 
-import org.apache.log4j.Logger;
-
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.commands.LoggerReceiver;
 import se.lolcalhost.xmplary.common.models.XMPMessage;

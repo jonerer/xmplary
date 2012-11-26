@@ -1,7 +1,12 @@
 package se.lolcalhost.xmplary.xmpgate;
 
+import java.security.KeyPair;
+import java.security.PublicKey;
+
+import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.jivesoftware.smack.XMPPException;
 
+import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.strategies.ChatDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.LoggerReceiverStrategy;
@@ -11,6 +16,11 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 public class GatewayMain extends XMPMain {
 	public GatewayMain(String conf) {
 		super(conf);
+		
+//		X509CertificateObject certificate = XMPConfig.getCertificate();
+//		KeyPair key = XMPConfig.getKey();
+//		PublicKey k1 = certificate.getPublicKey();
+//		PublicKey k2 = key.getPublic();
 		
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));

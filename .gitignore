@@ -10,3 +10,4 @@ xmpgate/database.db
 xmpleaf/database.db
 xmpback/database.db
 *.db-journal
+Thumbs.db

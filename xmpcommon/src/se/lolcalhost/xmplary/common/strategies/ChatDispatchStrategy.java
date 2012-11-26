@@ -8,7 +8,6 @@ import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
@@ -33,7 +32,7 @@ public class ChatDispatchStrategy extends AbstractMessageDispatchStrategy {
 			joinChat(jid);
 		}
 		try {
-			String asJSON = mess.asJSON();
+			String asJSON = mess.serialized();
 			chats.get(jid).sendMessage(asJSON);
 		} catch (XMPPException e) {
 			logger.error("Couldn't dispatch message to Chat.");

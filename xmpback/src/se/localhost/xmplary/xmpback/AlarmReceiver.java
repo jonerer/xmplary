@@ -23,6 +23,7 @@ public class AlarmReceiver extends Command {
 		String format = String.format("ALARM: %s. Origin is %s.",
 				msg.getRawContents(), msg.getOrigin().getName());
 		logger.info(format);
+		XMPMessage.tellOperator(format);
 		main.dispatchRaw(format);
 	}
 

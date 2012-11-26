@@ -14,5 +14,11 @@
 	<classpathentry kind="lib" path="lib/ormlite-core-4.42-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.7.2-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/bcmail-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-debug-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-ext-debug-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.17.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

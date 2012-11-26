@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.XMPMain;
-import se.lolcalhost.xmplary.common.commands.Command.CommandPriority;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;

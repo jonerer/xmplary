@@ -1,11 +1,13 @@
 package se.lolcalhost.xmplary.common;
 
+import java.security.Security;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.Connection;
@@ -18,6 +20,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 import se.lolcalhost.xmplary.common.models.XMPMessage;
+import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.strategies.AbstractMessageDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.IMessageReceiverStrategy;
 
@@ -35,6 +38,8 @@ public class XMPMain {
 	protected XMPMain(String config) {
 		PropertyConfigurator.configure("../xmpcommon/log4j.properties"); // initialize
 																			// log4j
+		Security.insertProviderAt(new BouncyCastleProvider(), 1);
+
 		XMPConfig.init(config);
 		p = XMPConfig.getInstance();
 		XMPDb.init();

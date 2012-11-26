@@ -25,7 +25,9 @@ public class XMPMessage implements JSONSerializable {
 
 		IsRegistered, Register, Unregister, RegistrationRequest,
 
-		DebugText, DataPoints, RequestDataPoints
+		DebugText, DataPoints, RequestDataPoints,
+		
+		Raw
 	}
 	
 	public static MessageType[] MulticastTypes = { MessageType.Alarm };
@@ -223,10 +225,14 @@ public class XMPMessage implements JSONSerializable {
 		return m;
 	}
 
-	public String asJSON() {
-		JSONObject json = new JSONObject();
-		writeObject(json);
-		return json.toString();
+	public String serialized() {
+		if (type != MessageType.Raw) {
+			JSONObject json = new JSONObject();
+			writeObject(json);
+			return json.toString();
+		} else {
+			return contents;
+		}
 	}
 
 	public void writeObject(JSONObject stream) {
@@ -319,6 +325,16 @@ public class XMPMessage implements JSONSerializable {
 
 	public static void setMain(XMPMain main) {
 		XMPMessage.main = main;
+	}
+	
+	public static void tellOperator(String text) {
+		XMPNode operator = XMPNode.getOperator();
+		if (operator != null) {
+			XMPMessage msg = new XMPMessage(MessageType.Raw);
+			msg.setTarget(operator);
+			msg.setContents(text);
+			msg.send();
+		}
 	}
 
 }

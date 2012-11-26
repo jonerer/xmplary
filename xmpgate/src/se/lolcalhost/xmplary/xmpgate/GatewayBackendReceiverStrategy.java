@@ -6,8 +6,8 @@ import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 import se.lolcalhost.xmplary.common.strategies.AbstractMessageReceiverStrategy;
 import se.lolcalhost.xmplary.xmpgate.commands.IsRegistered;
 import se.lolcalhost.xmplary.xmpgate.commands.Register;
-import se.lolcalhost.xmplary.xmpgate.commands.Unregister;
 import se.lolcalhost.xmplary.xmpgate.commands.SendDataPoints;
+import se.lolcalhost.xmplary.xmpgate.commands.Unregister;
 
 public class GatewayBackendReceiverStrategy extends AbstractMessageReceiverStrategy {
 	public GatewayBackendReceiverStrategy(XMPMain main) {

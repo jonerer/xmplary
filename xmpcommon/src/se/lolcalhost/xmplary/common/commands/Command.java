@@ -10,6 +10,7 @@ import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
+import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 
 public abstract class Command implements Comparable<Command> {
@@ -59,5 +60,4 @@ public abstract class Command implements Comparable<Command> {
 			throw new AuthorizationFailureException();
 		}
 	}
-	
 }

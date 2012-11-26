@@ -30,9 +30,11 @@ public class XMPDataPointMessages {
 	@DatabaseField(foreign=true, columnName=MESSAGE, canBeNull=false)
 	private XMPMessage message;
 	
-	public XMPDataPointMessages() {
-	}
-
+	/**
+	 * No-arg constructor for the ORM.
+	 */
+	public XMPDataPointMessages() {}
+	
 	public XMPDataPointMessages(XMPDataPoint datapoint, XMPMessage message) {
 		this.datapoint = datapoint;
 		this.message = message;

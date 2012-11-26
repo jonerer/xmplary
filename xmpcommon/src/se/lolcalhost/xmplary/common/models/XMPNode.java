@@ -2,17 +2,21 @@ package se.lolcalhost.xmplary.common.models;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPDb;
+import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
+import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
 import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 
-public class XMPNode {
+public class XMPNode implements JSONSerializable {
 	static Logger logger = Logger.getLogger(XMPNode.class);
 	
 	public enum NodeType {
@@ -40,6 +44,10 @@ public class XMPNode {
 	public static final String TYPE = "type";
 	@DatabaseField(canBeNull = false, columnName = TYPE)
 	private NodeType type;
+	
+	public static final String PUBLICKEY = "publicKey";
+	@DatabaseField(canBeNull = true, columnName = PUBLICKEY)
+	private String publicKey;
 	
 	/**
 	 * public key. maybe use a cert library and save certs to disk instead.
@@ -277,6 +285,36 @@ public class XMPNode {
 
 	public static List<XMPNode> getRegisteredBackends() throws SQLException {
 		return XMPDb.Nodes.queryBuilder().where().eq(TYPE, NodeType.backend).and().eq(REGISTERED, true).query();
+	}
+
+	@Override
+	public void readObject(JSONObject stream) throws JSONException {
+		name = stream.getString("name");
+		type = getTypeFromName(stream.getString("name"));
+		registered = false;
+	}
+
+	@Override
+	public void writeObject(JSONObject stream) throws JSONException {
+		stream.put("name", name);
+	}
+
+	public static List<XMPNode> getLeaves() {
+		try {
+			return XMPDb.Nodes.queryForEq(TYPE, NodeType.leaf);
+		} catch (SQLException e) {
+			handleException(e);
+		}
+		return null;
+	}
+
+	public Collection<?> getDatapoints() {
+		try {
+			return XMPDb.DataPoints.queryForEq(XMPDataPoint.FROM, this);
+		} catch (SQLException e) {
+			handleException(e);
+		}
+		return null;
 	}
 
 }
