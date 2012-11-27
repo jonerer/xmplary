@@ -1,19 +1,29 @@
 package se.lolcalhost.xmplary.common.models;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.X509CertificateObject;
+import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.jivesoftware.smack.packet.Message;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
+import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -26,10 +36,10 @@ public class XMPMessage implements JSONSerializable {
 		IsRegistered, Register, Unregister, RegistrationRequest,
 
 		DebugText, DataPoints, RequestDataPoints,
-		
+
 		Raw
 	}
-	
+
 	public static MessageType[] MulticastTypes = { MessageType.Alarm };
 
 	protected static Logger logger = Logger.getLogger(XMPMessage.class);
@@ -49,6 +59,18 @@ public class XMPMessage implements JSONSerializable {
 	@DatabaseField(canBeNull = false, columnName = TYPE)
 	private MessageType type;
 
+	public static final String ORIGINAL_ID = "original_id";
+	@DatabaseField(columnName = ORIGINAL_ID)
+	private int originalId;
+
+	public static final String RESPONSE_TO_ID = "response_to_id";
+	@DatabaseField(canBeNull = true, columnName = RESPONSE_TO_ID)
+	private int responseToId;
+
+	public static final String RESPONSE_TO_NODE = "response_to_node_id";
+	@DatabaseField(canBeNull = true, columnName = RESPONSE_TO_NODE, foreign = true)
+	private XMPNode responseToNode;
+
 	public static final String TARGET = "target";
 	@DatabaseField(canBeNull = true, columnName = TARGET, foreign = true)
 	private XMPNode target;
@@ -56,7 +78,7 @@ public class XMPMessage implements JSONSerializable {
 	public static final String FROM = "from";
 	@DatabaseField(canBeNull = false, columnName = FROM, foreign = true)
 	private XMPNode from;
-	
+
 	public static final String ORIGIN = "origin";
 	@DatabaseField(canBeNull = false, columnName = ORIGIN, foreign = true)
 	private XMPNode origin;
@@ -68,13 +90,17 @@ public class XMPMessage implements JSONSerializable {
 	public static final String DELIVERED = "delivered";
 	@DatabaseField(canBeNull = false, columnName = DELIVERED)
 	private boolean delivered;
-	
+
 	public static final String SIGNATURE = "signature";
 	@DatabaseField(canBeNull = true, columnName = SIGNATURE)
-	private String signature = "";
+	private String signature;
+
+	public static final String VERIFIED = "verified";
+	@DatabaseField(canBeNull = false, columnName = VERIFIED)
+	private boolean verified;
 
 	private static XMPMain main;
-	
+
 	// protected List<HashMap<DataPointField, Float>> dataPoints = new
 	// ArrayList<HashMap<DataPointField,Float>>();
 	// TODO: is there a change between sent and acknowledged?
@@ -147,12 +173,12 @@ public class XMPMessage implements JSONSerializable {
 		try {
 			msg.setOutgoing(false);
 			msg.setDelivered(true);
-			msg.setTarget(XMPNode.getSelf());
-			
+			// msg.setTarget(XMPNode.getSelf());
+
 			JSONObject jo;
 			jo = new JSONObject(message.getBody());
 			msg.readObject(jo);
-			
+
 			logger.trace("Parse successful. Finding origin node.");
 
 			XMPNode from = XMPNode.getByJID(message.getFrom());
@@ -167,7 +193,7 @@ public class XMPMessage implements JSONSerializable {
 			if (jo.has("contents")) {
 				msg.setContents(jo.get("contents"));
 			}
-			
+
 		} catch (JSONException e) {
 			logger.warn("Unable to unpack message into XMPMessage. Body: "
 					+ message.getBody());
@@ -176,25 +202,37 @@ public class XMPMessage implements JSONSerializable {
 		return msg;
 	}
 
-	public XMPMessage createResponse() {
-		return createResponse(null);
-	}
-
 	public Object getContents() throws JSONException {
-		if (type == MessageType.DataPoints) {
-			List<XMPDataPoint> res = new ArrayList<XMPDataPoint>();
-			JSONArray ja = new JSONArray(contents);
-			for (int i = 0; i < ja.length(); i++) {
-				JSONObject jo = ja.getJSONObject(i);
-				XMPDataPoint p = new XMPDataPoint();
-				p.readObject(jo);
-				p.setReceived(new Date());
-				res.add(p);
+		try {
+			if (type == MessageType.DataPoints) {
+				List<XMPDataPoint> res = new ArrayList<XMPDataPoint>();
+				JSONArray ja = new JSONArray(contents);
+				for (int i = 0; i < ja.length(); i++) {
+					JSONObject jo = ja.getJSONObject(i);
+					XMPDataPoint p = new XMPDataPoint();
+					p.readObject(jo);
+					p.setReceived(new Date());
+					res.add(p);
+				}
+				return res;
+			} else if (type == MessageType.Register) {
+				StringReader fr = new StringReader(contents);
+				PEMReader r = new PEMReader(fr);
+				Object o;
+				o = r.readObject();
+				X509CertificateObject cert = null;
+				if (o instanceof X509CertificateObject) {
+					cert = (X509CertificateObject) o;
+				}
+				r.close();
+				return cert;
+			} else {
+				return contents;
 			}
-			return res;
-		} else {
-			return contents;
+		} catch (IOException e) {
+			logger.error("Error in content unpacking: ", e);
 		}
+		return null;
 	}
 
 	public void setContents(Object contents) {
@@ -211,17 +249,32 @@ public class XMPMessage implements JSONSerializable {
 					ar.put(jo);
 				}
 				this.contents = ar.toString();
+			} else if (contents instanceof X509CertificateObject) {
+				X509CertificateObject obj = (X509CertificateObject) contents;
+				StringWriter sw = new StringWriter();
+				PEMWriter wr = new PEMWriter(sw);
+				wr.writeObject(obj);
+				wr.close();
+				this.contents = sw.toString();
 			}
 		} catch (JSONException e) {
+			throw new IllegalArgumentException();
+		} catch (IOException e) {
 			throw new IllegalArgumentException();
 		}
 	}
 
-	private XMPMessage createResponse(JSONObject object) {
+	public XMPMessage createResponse() {
 		XMPMessage m = new XMPMessage(type);
 		m.setTarget(from);
 		m.setOutgoing(true);
-		m.setContents(object);
+		m.setResponseToId(getOriginalId());
+		m.setResponseToNode(getOrigin());
+		try {
+			m.setContents(getContents());
+		} catch (JSONException e) {
+			logger.error("Couldn't unpack contents of message to respond to", e);
+		}
 		return m;
 	}
 
@@ -239,19 +292,38 @@ public class XMPMessage implements JSONSerializable {
 		try {
 			stream.put("contents", contents);
 
+			stream.put("target", target.getName());
+
 			stream.put("type", type.toString());
-			
+
+			stream.put("original", getOriginalId());
+
 			stream.put("origin", origin.getName());
-			
-			stream.put("signature", signature);
+
+			stream.put("signature", getSignature());
+
+			stream.put("response_to_id", responseToId);
+
+			if (responseToId != 0) {
+				stream.put("response_to_node", responseToNode.getName());
+			}
 
 		} catch (JSONException e) {
 			logger.error("Unable to serialize xmp message: ", e);
-		} 
+		}
 	}
 
 	public void readObject(JSONObject stream) throws JSONException {
 		type = MessageType.valueOf(stream.getString("type"));
+		target = XMPNode.getByJID(stream.getString("target"));
+		originalId = stream.getInt("original");
+
+		responseToId = stream.getInt("response_to_id");
+		if (responseToId != 0) {
+			responseToNode = XMPNode.getOrCreateByJID(stream
+					.getString("response_to_node"));
+		}
+
 		String string = stream.getString("origin");
 		origin = XMPNode.getByJID(string);
 		if (origin == null) {
@@ -259,11 +331,11 @@ public class XMPMessage implements JSONSerializable {
 		}
 		signature = stream.getString("signature");
 	}
-	
+
 	public void sign() {
-		signature = "sign_of_" + id + " by " + from.getName();
+		setSignature("sign_of_" + id + " by " + from.getName());
 	}
-	
+
 	public JSONObject asJSONObject() {
 		JSONObject json = new JSONObject();
 		writeObject(json);
@@ -281,7 +353,7 @@ public class XMPMessage implements JSONSerializable {
 			logger.error("Couldn't save xmp message into DB.", e);
 		}
 	}
-	
+
 	public boolean isMulticast() {
 		boolean isMulticast = false;
 		for (int i = 0; i < MulticastTypes.length; i++) {
@@ -318,7 +390,7 @@ public class XMPMessage implements JSONSerializable {
 		msg.save();
 		msg.send();
 	}
-	
+
 	public void send() {
 		main.dispatch(this);
 	}
@@ -326,7 +398,7 @@ public class XMPMessage implements JSONSerializable {
 	public static void setMain(XMPMain main) {
 		XMPMessage.main = main;
 	}
-	
+
 	public static void tellOperator(String text) {
 		XMPNode operator = XMPNode.getOperator();
 		if (operator != null) {
@@ -335,6 +407,99 @@ public class XMPMessage implements JSONSerializable {
 			msg.setContents(text);
 			msg.send();
 		}
+	}
+
+	public int getOriginalId() {
+		if (originalId == 0) {
+			return id;
+		}
+		return originalId;
+	}
+
+	public void setOriginalId(int originalId) {
+		this.originalId = originalId;
+	}
+
+	/**
+	 * Who gets to send to whom?
+	 * 
+	 * Backend can send to operator. Gateway can send to everyone.
+	 * 
+	 * Everyone can send to chatroom.
+	 * 
+	 * The rest is sent to gateway.
+	 * 
+	 * Also, dont expect others to follow this pattern. Signatures must be
+	 * traced to origin node.
+	 * 
+	 * @return
+	 */
+	public XMPNode getNextRoutingNode() {
+		if (XMPNode.getSelf().getType() == NodeType.backend
+				&& target.getType() == NodeType.operator) {
+			return target;
+		} else if (XMPNode.getSelf().equals(XMPNode.getGateway())) {
+			return target;
+		} else if (target.getType() == NodeType.chatroom) {
+			return target;
+		} else {
+			return XMPNode.getGateway();
+		}
+	}
+
+	/**
+	 * Return the signature. Or, if one doesn't exist and this is from self,
+	 * sign it.
+	 * 
+	 * @return
+	 */
+	public String getSignature() {
+		if (signature == null && from.equals(XMPNode.getSelf())) {
+			String conts = contents == null ? "" : contents;
+			return XMPCrypt.sign(conts + origin.getName() + target.getName()
+					+ getOriginalId());
+		}
+		return signature;
+	}
+
+	public void verify() {
+		if (origin.getCert() == null) {
+			verified = false;
+			return;
+		} else {
+			String conts = contents == null ? "" : contents;
+			XMPCrypt.verify(contents + origin.getName() + target.getName()
+					+ getOriginalId(), origin.getCert().getPublicKey(),
+					signature);
+		}
+	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+
+	public int getResponseToId() {
+		return responseToId;
+	}
+
+	public void setResponseToId(int responseToId) {
+		this.responseToId = responseToId;
+	}
+
+	public XMPNode getResponseToNode() {
+		return responseToNode;
+	}
+
+	public void setResponseToNode(XMPNode responseToNode) {
+		this.responseToNode = responseToNode;
+	}
+
+	public boolean isVerified() {
+		return verified;
+	}
+
+	public boolean isResponse() {
+		return responseToId != 0;
 	}
 
 }

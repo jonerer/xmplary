@@ -7,15 +7,15 @@ import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.commands.IncomingDataPoints;
+import se.lolcalhost.xmplary.common.commands.IsRegistered;
+import se.lolcalhost.xmplary.common.commands.Register;
+import se.lolcalhost.xmplary.common.commands.Unregister;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 import se.lolcalhost.xmplary.common.strategies.AbstractMessageReceiverStrategy;
-import se.lolcalhost.xmplary.xmpgate.commands.IsRegistered;
 import se.lolcalhost.xmplary.xmpgate.commands.MulticastToBackends;
-import se.lolcalhost.xmplary.xmpgate.commands.Register;
-import se.lolcalhost.xmplary.xmpgate.commands.Unregister;
 
 public class GatewayLeafReceiverStrategy extends AbstractMessageReceiverStrategy {
 	protected static Logger logger = Logger.getLogger(GatewayLeafReceiverStrategy.class);

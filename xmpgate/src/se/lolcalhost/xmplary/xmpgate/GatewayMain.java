@@ -17,11 +17,6 @@ public class GatewayMain extends XMPMain {
 	public GatewayMain(String conf) {
 		super(conf);
 		
-//		X509CertificateObject certificate = XMPConfig.getCertificate();
-//		KeyPair key = XMPConfig.getKey();
-//		PublicKey k1 = certificate.getPublicKey();
-//		PublicKey k2 = key.getPublic();
-		
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
 		receivers.add(new LoggerReceiverStrategy(this));

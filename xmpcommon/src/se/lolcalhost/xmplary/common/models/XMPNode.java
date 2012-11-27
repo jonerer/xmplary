@@ -6,14 +6,16 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.lolcalhost.xmplary.common.XMPConfig;
+import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
-import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 
 public class XMPNode implements JSONSerializable {
@@ -45,9 +47,9 @@ public class XMPNode implements JSONSerializable {
 	@DatabaseField(canBeNull = false, columnName = TYPE)
 	private NodeType type;
 	
-	public static final String PUBLICKEY = "publicKey";
-	@DatabaseField(canBeNull = true, columnName = PUBLICKEY)
-	private String publicKey;
+	public static final String CERT = "cert";
+	@DatabaseField(canBeNull = true, columnName = CERT, dataType=DataType.SERIALIZABLE)
+	private X509CertificateObject cert;
 	
 	/**
 	 * public key. maybe use a cert library and save certs to disk instead.
@@ -110,6 +112,7 @@ public class XMPNode implements JSONSerializable {
 				if (queryForEq.isEmpty()) {
 					logger.info("Self not found in database. Creating...");
 					self = new XMPNode();
+					self.setCert(XMPCrypt.getCertificate());
 					self.setName(XMPConfig.Name());
 					self.setType(XMPConfig.Type());
 				} else {
@@ -315,6 +318,14 @@ public class XMPNode implements JSONSerializable {
 			handleException(e);
 		}
 		return null;
+	}
+
+	public X509CertificateObject getCert() {
+		return cert;
+	}
+
+	public void setCert(X509CertificateObject cert) {
+		this.cert = cert;
 	}
 
 }

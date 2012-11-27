@@ -1,10 +1,9 @@
-package se.lolcalhost.xmplary.xmpgate.commands;
+package se.lolcalhost.xmplary.common.commands;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.lolcalhost.xmplary.common.XMPMain;
-import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 
 public class IsRegistered extends Command {

@@ -10,6 +10,7 @@ import org.jivesoftware.smack.packet.Message;
 
 import se.localhost.xmplary.xmpback.dump.DatapointDataset;
 import se.localhost.xmplary.xmpback.dump.DatapointGraph;
+import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
@@ -197,7 +198,9 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 			@Override
 			public void HandleCommand(Message m) {
 				XMPMessage.tellOperator("I'm on it... ");
-				new XMPMessage(MessageType.Register).send();
+				XMPMessage xmpMessage = new XMPMessage(MessageType.Register);
+				xmpMessage.setContents(XMPCrypt.getCertificate());
+				xmpMessage.send();
 			}
 		});
 		handlers.put(OperatorCommand.RequestDataPoints,

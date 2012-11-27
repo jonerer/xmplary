@@ -11,14 +11,16 @@ public class LoggerReceiverStrategy extends AbstractMessageReceiverStrategy {
 	public LoggerReceiverStrategy(XMPMain main) {
 		super(main);
 	}
+	
+	@Override
+	protected void registerUnsafeHandlers() {
+		for (MessageType type : XMPMessage.MessageType.values()) {
+			handlerClassesUnsafe.put(type, LoggerReceiver.class);
+		}
+	}
 
 	@Override
-	protected void registerHandlers() {
-		for (MessageType type : XMPMessage.MessageType.values()) {
-			handlerClasses.put(type, LoggerReceiver.class);
-		}
-		
-	}
+	protected void registerHandlers() {}
 	
 	@Override
 	protected void registerNodeTypes() {

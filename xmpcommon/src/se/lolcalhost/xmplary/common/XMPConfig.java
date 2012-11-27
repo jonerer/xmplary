@@ -57,86 +57,6 @@ public class XMPConfig {
 		return p.getProperty("name");
 	}
 
-	private static List<X509CertificateObject> trusted;
-
-	public static List<X509CertificateObject> getTrustedCerts() {
-		if (trusted == null) {
-			trusted = new ArrayList<X509CertificateObject>();
-			File dir = new File("../certs/certs/ca");
-			File[] listFiles = dir.listFiles();
-			for (File file : listFiles) {
-				try {
-					FileReader fr;
-					fr = new FileReader(file);
-					PEMReader p = new PEMReader(fr);
-					Object o = p.readObject();
-					X509CertificateObject cert = null;
-					if (o instanceof X509CertificateObject) {
-						cert = (X509CertificateObject) o;
-						trusted.add(cert);
-					}
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return trusted;
-	}
-
-	/**
-	 * Signing:
-	 * http://stackoverflow.com/questions/1580012/using-a-pem-x-509-private-key-to-sign-a-message-natively
-	 */
-	public static KeyPair getKey() {
-		try {
-			File f = new File(p.getProperty("keyfile"));
-			FileReader r = new FileReader(f);
-			PEMReader pr = new PEMReader(r);
-			Object o = pr.readObject();
-			KeyPair kp = (KeyPair) o;
-			return kp;
-		} catch (FileNotFoundException e) {
-			logger.error("FATAL: couldn't load private key", e);
-			System.exit(1);
-		} catch (IOException e) {
-			logger.error("FATAL: couldn't load private key", e);
-			System.exit(1);
-		}
-		return null;
-	}
-
-	public static X509CertificateObject getCertificate() {
-		X509CertificateObject cert = null;
-		try {
-
-			File f = new File(p.getProperty("certfile"));
-			FileReader fr;
-			fr = new FileReader(f);
-
-			PEMReader r = new PEMReader(fr);
-			Object o = r.readObject();
-			if (o instanceof X509CertificateObject) {
-				cert = (X509CertificateObject) o;
-			}
-			cert.checkValidity();
-		} catch (FileNotFoundException e) {
-			logger.error("FATAL: couldn't load private key", e);
-			System.exit(1);
-		} catch (IOException e) {
-			logger.error("FATAL: couldn't load private key", e);
-			System.exit(1);
-		} catch (CertificateExpiredException e) {
-			logger.error("FATAL: couldn't load private key", e);
-			System.exit(1);
-		} catch (CertificateNotYetValidException e) {
-			logger.error("FATAL: couldn't load private key", e);
-			System.exit(1);
-		}
-		return cert;
-	}
-
 	public static NodeType Type() {
 		return NodeType.valueOf(p.getProperty("type"));
 	}
@@ -195,7 +115,6 @@ public class XMPConfig {
 				e.printStackTrace();
 			}
 		}
-//		getTrustedCerts();
 
 	}
 
@@ -205,5 +124,17 @@ public class XMPConfig {
 		} else {
 			return 240;
 		}
+	}
+
+	public static String getTrustedCertsDir() {
+		return "../certs/certs/ca";
+	}
+
+	public static String getCertfile() {
+		return p.getProperty("certfile");
+	}
+
+	public static String getKeyfile() {
+		return p.getProperty("keyfile");
 	}
 }

@@ -1,4 +1,4 @@
-package se.lolcalhost.xmplary.xmpgate.commands;
+package se.lolcalhost.xmplary.common.commands;
 
 import java.sql.SQLException;
 
@@ -7,7 +7,6 @@ import org.json.JSONObject;
 
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
-import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
 

@@ -43,6 +43,7 @@ public class XMPMain {
 		XMPConfig.init(config);
 		p = XMPConfig.getInstance();
 		XMPDb.init();
+		XMPCrypt.init();
 		XMPMessage.setMain(this);
 
 		connection = new XMPPConnection(p.getProperty("Domain"));
@@ -176,8 +177,9 @@ public class XMPMain {
 		logger.trace(String.format("Attempting to parse message %s ...",
 				message.getBody()));
 		msg = XMPMessage.unpack(message);
+		msg.verify();
 		msg.save();
-
+		
 		if (msg != null) {
 			for (IMessageReceiverStrategy receiver : receivers) {
 				receiver.ReceiveMessage(msg);

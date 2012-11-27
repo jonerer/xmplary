@@ -27,7 +27,7 @@ public class ChatDispatchStrategy extends AbstractMessageDispatchStrategy {
 	@Override
 	public void DispatchMessage(XMPMessage mess) {
 		
-		String jid = mess.getTarget().getJID();
+		String jid = mess.getNextRoutingNode().getJID();
 		if (!chats.containsKey(jid)) {
 			joinChat(jid);
 		}
