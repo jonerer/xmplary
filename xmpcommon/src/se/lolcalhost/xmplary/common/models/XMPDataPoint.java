@@ -21,9 +21,11 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable
 public class XMPDataPoint implements JSONSerializable {
 	public static enum DataPointField {
-		Temperature, Current, Resistance 
+		Temperature, FuelDrain, FuelRemaining, Weldspeed, Cheeseburgers, VoodooMagic
 		// be sure not to put field names that clash with properties that need to be serialized.
 	}
+	
+	public static HashMap<DataPointField, String> explanations = new HashMap<XMPDataPoint.DataPointField, String>();
 	
 	protected static Logger logger = Logger.getLogger(XMPDataPoint.class);
 
@@ -62,9 +64,21 @@ public class XMPDataPoint implements JSONSerializable {
 
 	
 	public XMPDataPoint() {
+		if (explanations == null) {
+			initExplanations();
+		}
 		from = XMPNode.getSelf();
 		time = new Date();
 		received = new Date();
+	}
+
+	private void initExplanations() {
+		explanations.put(DataPointField.Temperature, "Temperature (c)");
+		explanations.put(DataPointField.FuelDrain, "Fuel Drain (litres/hr)");
+		explanations.put(DataPointField.FuelRemaining, "Fuel remaining (litres)");
+		explanations.put(DataPointField.Weldspeed, "Weld speed (mm/sec)");
+		explanations.put(DataPointField.Cheeseburgers, "Cheeseburgers consumed (/hour)");
+		explanations.put(DataPointField.VoodooMagic, "Voodoo Magic (souls/hour)");
 	}
 
 	public XMPNode getFrom() {

@@ -1,9 +1,9 @@
 package se.lolcalhost.xmplary.common.models;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.security.PublicKey;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
-import org.bouncycastle.util.io.pem.PemWriter;
 import org.jivesoftware.smack.packet.Message;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,6 +21,7 @@ import org.json.JSONObject;
 import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
+import se.lolcalhost.xmplary.common.commands.MessageDispatchCommand;
 import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 
@@ -175,11 +175,7 @@ public class XMPMessage implements JSONSerializable {
 			msg.setDelivered(true);
 			// msg.setTarget(XMPNode.getSelf());
 
-			JSONObject jo;
-			jo = new JSONObject(message.getBody());
-			msg.readObject(jo);
-
-			logger.trace("Parse successful. Finding origin node.");
+			logger.trace("Finding origin node.");
 
 			XMPNode from = XMPNode.getByJID(message.getFrom());
 			if (from == null) {
@@ -187,9 +183,21 @@ public class XMPMessage implements JSONSerializable {
 				from = XMPNode.createByJID(message.getFrom());
 			} else {
 				logger.trace("Sender node identified.");
+			}			
+			msg.setFrom(from);
+
+			if (from.equals(XMPNode.getSelf())) {
+				logger.trace("Sender was self. ignoring message.");
+				return null;
 			}
 
-			msg.setFrom(from);
+			logger.trace("Parsing successful.");
+
+			JSONObject jo;
+			jo = new JSONObject(message.getBody());
+			msg.readObject(jo);
+
+
 			if (jo.has("contents")) {
 				msg.setContents(jo.get("contents"));
 			}
@@ -323,6 +331,9 @@ public class XMPMessage implements JSONSerializable {
 			responseToNode = XMPNode.getOrCreateByJID(stream
 					.getString("response_to_node"));
 		}
+		if (stream.has("contents")) {
+			contents = stream.getString("contents");
+		}
 
 		String string = stream.getString("origin");
 		origin = XMPNode.getByJID(string);
@@ -392,7 +403,8 @@ public class XMPMessage implements JSONSerializable {
 	}
 
 	public void send() {
-		main.dispatch(this);
+		MessageDispatchCommand cmd = new MessageDispatchCommand(main, this);
+		cmd.schedule();
 	}
 
 	public static void setMain(XMPMain main) {
@@ -456,22 +468,32 @@ public class XMPMessage implements JSONSerializable {
 	public String getSignature() {
 		if (signature == null && from.equals(XMPNode.getSelf())) {
 			String conts = contents == null ? "" : contents;
-			return XMPCrypt.sign(conts + origin.getName() + target.getName()
-					+ getOriginalId());
+			return XMPCrypt.sign(conts + origin.getName() + getOriginalId());
 		}
 		return signature;
 	}
 
-	public void verify() {
+	/**
+	 * Try to verify this message with the stored cert.
+	 */
+	public boolean verify() {
 		if (origin.getCert() == null) {
 			verified = false;
-			return;
+			return false;
 		} else {
-			String conts = contents == null ? "" : contents;
-			XMPCrypt.verify(contents + origin.getName() + target.getName()
-					+ getOriginalId(), origin.getCert().getPublicKey(),
-					signature);
+			return verify(origin.getCert().getPublicKey());
 		}
+	}
+
+	/**
+	 * Try to verify this message against a given cert.
+	 */
+	public boolean verify(PublicKey key) {
+		// TODO: should this really have side effects?
+		String conts = contents == null ? "" : contents;
+		verified = XMPCrypt.verify(
+				conts + origin.getName() + getOriginalId(), key, signature);
+		return verified;
 	}
 
 	public void setSignature(String signature) {

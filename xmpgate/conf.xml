@@ -12,4 +12,5 @@
 <entry key="database">database.db</entry>
 <entry key="certfile">../certs/certs/XMPlary_Gateway_1.crt</entry>
 <entry key="keyfile">../certs/keys/XMPlary_Gateway_1.pem</entry>
+<entry key="debug">true</entry>
 </properties>

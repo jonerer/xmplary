@@ -1,4 +1,4 @@
-package se.localhost.xmplary.xmpback;
+package se.localhost.xmplary.xmpback.strategies;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,7 +80,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 			if (handlers.get(c) != null && n.getType() == NodeType.operator) {
 				handlers.get(c).HandleCommand(m);
 			} else {
-				XMPMessage.tellOperator("Unknown command, no handler registered.");
+				XMPMessage.tellOperator("Unknown command, or you're not operator.");
 			}
 		}
 	}
@@ -93,8 +93,6 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	public void ReceiveMessage(XMPMessage m) {
 		switch (m.getType()) {
 		case IsRegistered:
-		case Register:
-		case Unregister:
 			XMPMessage.tellOperator("Is registered? " + m.getRawContents());
 			break;
 		default:

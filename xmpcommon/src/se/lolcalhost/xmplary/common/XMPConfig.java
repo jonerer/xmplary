@@ -40,6 +40,13 @@ public class XMPConfig {
 	public static String Domain() {
 		return p.getProperty("Domain");
 	}
+	
+	public static boolean isDebug() {
+		if (!p.containsKey("debug")) {
+			return false;
+		}
+		return Boolean.valueOf(p.getProperty("debug"));
+	}
 
 	public static String RoomDomain() {
 		return p.getProperty("RoomDomain");

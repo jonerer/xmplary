@@ -9,9 +9,13 @@ import org.jivesoftware.smack.XMPPException;
 import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.strategies.ChatDispatchStrategy;
+import se.lolcalhost.xmplary.common.strategies.LoggerDispatcherStrategy;
 import se.lolcalhost.xmplary.common.strategies.LoggerReceiverStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
+import se.lolcalhost.xmplary.xmpgate.strategies.GatewayBackendReceiverStrategy;
+import se.lolcalhost.xmplary.xmpgate.strategies.GatewayLeafReceiverStrategy;
+import se.lolcalhost.xmplary.xmpgate.strategies.SwitchboardReceiverStrategy;
 
 public class GatewayMain extends XMPMain {
 	public GatewayMain(String conf) {
@@ -19,9 +23,12 @@ public class GatewayMain extends XMPMain {
 		
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
+		dispatchers.add(new LoggerDispatcherStrategy(this));
 		receivers.add(new LoggerReceiverStrategy(this));
 		receivers.add(new GatewayBackendReceiverStrategy(this));
 		receivers.add(new GatewayLeafReceiverStrategy(this));
+		
+		receivers.add(new SwitchboardReceiverStrategy(this));
 
 		PeriodicUpdatesThread put = new PeriodicUpdatesThread(this);
 		put.start();

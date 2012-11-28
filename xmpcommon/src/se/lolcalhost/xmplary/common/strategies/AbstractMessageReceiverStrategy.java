@@ -24,7 +24,8 @@ public abstract class AbstractMessageReceiverStrategy implements
 	protected HashMap<MessageType, Class<? extends Command>> handlerClasses = new HashMap<XMPMessage.MessageType, Class<? extends Command>>();
 	protected Set<NodeType> nodeTypes = new HashSet<NodeType>();
 	protected HashMap<MessageType, Class<? extends Command>> handlerClassesUnsafe = new HashMap<XMPMessage.MessageType, Class<? extends Command>>();
-
+	private boolean handleMessagesNotToSelf = false;
+	
 	public AbstractMessageReceiverStrategy(XMPMain main) {
 		this.main = main;
 		registerHandlers();
@@ -47,7 +48,7 @@ public abstract class AbstractMessageReceiverStrategy implements
 
 	public void ReceiveMessage(XMPMessage m) {
 		if (nodeTypes.contains(m.getFrom().getType())) {
-			if (m.getTarget().equals(XMPNode.getSelf())) {
+			if (handleMessagesNotToSelf || m.getTarget().equals(XMPNode.getSelf())) {
 				// else, pass it on along to the real target.
 				try {
 					Class<? extends Command> c;
@@ -83,6 +84,14 @@ public abstract class AbstractMessageReceiverStrategy implements
 				}
 			}
 		}
+	}
+
+	public boolean isHandleMessagesNotToSelf() {
+		return handleMessagesNotToSelf;
+	}
+
+	public void setHandleMessagesNotToSelf(boolean handleMessagesNotToSelf) {
+		this.handleMessagesNotToSelf = handleMessagesNotToSelf;
 	}
 
 }

@@ -18,8 +18,9 @@ public class LoggerReceiver extends Command {
 	@Override
 	public void execute() throws JSONException, SQLException,
 			AuthorizationFailureException {
-		String format = String.format("Received message of type %s with contents %s. Sender is %s. I am %s.", msg.getType().toString(),
-				msg.getRawContents(), msg.getFrom().getName(), XMPNode.getSelf().getName());
+		String format = String.format("Received message of type %s. Verified: " + msg.isVerified() + ". (o->f->t). (%s->%s->%s) Contents: %s", 
+				msg.getType().toString(),
+				msg.getOrigin().getName(), msg.getFrom().getName(), msg.getTarget().getName(), msg.getRawContents());
 		logger.info(format);
 	}
 

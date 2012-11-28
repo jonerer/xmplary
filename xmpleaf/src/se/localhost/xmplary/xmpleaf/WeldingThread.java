@@ -1,20 +1,25 @@
 package se.localhost.xmplary.xmpleaf;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Random;
 
+import se.localhost.xmplary.xmpleaf.commands.SendAlarmCommand;
+import se.localhost.xmplary.xmpleaf.commands.SendStatus;
+import se.localhost.xmplary.xmpleaf.commands.SendWeldingDatapointsCommand;
+import se.localhost.xmplary.xmpleaf.commands.SetSampleValues;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
-import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
-import se.lolcalhost.xmplary.common.models.XMPMessage;
-import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 
 public class WeldingThread extends Thread {
 
 	private LeafMain main;
-
+	private HashMap<XMPDataPoint.DataPointField, Double> status = new HashMap<XMPDataPoint.DataPointField, Double>();
+	public enum WelderStatus {
+		RUNNING,
+		REFUELING,
+		COOLINGDOWN,
+		STOPPED
+	}
+	
 	public WeldingThread(LeafMain main) {
 		super("WeldingThread");
 		this.main = main;
@@ -24,45 +29,30 @@ public class WeldingThread extends Thread {
 	public void run() {
 		Random r = new Random();
 		while (true) {
-			if (r.nextFloat() < 0.1) {
-				XMPMessage msg = new XMPMessage();
-				msg.setContents("Temperature High");
-				msg.setType(MessageType.Alarm);
-				msg.send();
+			SetSampleValues ssv = new SetSampleValues(main, this);
+			ssv.schedule();
+			
+			SendStatus ss = new SendStatus(main, this);
+			if (r.nextFloat() < 0.3) {
+				SendAlarmCommand sac = new SendAlarmCommand(main, null);
+				sac.schedule();
 				// main.pushMessage(" -- ALARM: TEMPERATURE HIGH --");
 			} else {
 				// create a message to send
-				XMPMessage msg = new XMPMessage();
-				msg.setType(MessageType.DataPoints);
-				msg.setOutgoing(true);
-				msg.save();
-
-				// fill it up with a random set of data points.
-				int numDatapoints = r.nextInt(10) + 1;
-				List l = new ArrayList();
-				for (int i = 0; i < numDatapoints; i++) {
-					XMPDataPoint dp = new XMPDataPoint();
-					Map<DataPointField, Double> contents = dp.getContents();
-					contents.put(DataPointField.Current, r.nextDouble() * 100);
-					contents.put(DataPointField.Resistance,
-							r.nextDouble() * 200 + 1000);
-					contents.put(DataPointField.Temperature,
-							r.nextDouble() * 20 + 40);
-					dp.save();
-					l.add(dp);
-				}
-
-				msg.setContents(l);
-				msg.send();
+				SendWeldingDatapointsCommand cmd = new SendWeldingDatapointsCommand(main, null);
+				cmd.schedule();
 			}
-			// main.pushMessage("Welding data: " + newVal);
 			try {
-
-				Thread.sleep((long) (r.nextFloat() * 6000));
+				Thread.sleep((long) (r.nextFloat() * 1000));
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
+
+	public HashMap<XMPDataPoint.DataPointField, Double> getStatus() {
+		return status;
+	}
+
 }

@@ -19,8 +19,11 @@ import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
+import se.lolcalhost.xmplary.common.commands.RequestRegistrationCommand;
+import se.lolcalhost.xmplary.common.commands.UnpackAndReceiveMessage;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPNode;
+import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 import se.lolcalhost.xmplary.common.strategies.AbstractMessageDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.IMessageReceiverStrategy;
 
@@ -36,7 +39,7 @@ public class XMPMain {
 	
 	
 	protected XMPMain(String config) {
-		PropertyConfigurator.configure("../xmpcommon/log4j.properties"); // initialize
+		PropertyConfigurator.configure("../xmpcommon/log5j.properties"); // initialize
 																			// log4j
 		Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
@@ -132,26 +135,7 @@ public class XMPMain {
 		}
 	}
 
-	/**
-	 * Dispatch a message. This function is available via the XMPMessage.send() comfortability function.
-	 * So you probably wont have to call this one directly.
-	 * 
-	 * @param xmp
-	 */
-	public void dispatch(XMPMessage xmp) {
-		// TODO: here is where to sign stuff.
-		try {
-			xmp.setDelivered(true); // TODO: maybe do this later, after getting
-									// an ACK?
-			xmp.setOutgoing(true);
-			XMPDb.Messages.createOrUpdate(xmp);
-		} catch (SQLException e) {
-			logger.error("Tried to save xmp message before sending it. Failed.");
-		}
-		for (AbstractMessageDispatchStrategy dispatcher : dispatchers) {
-			dispatcher.DispatchMessage(xmp);
-		}
-	}
+
 
 	public void dispatchRaw(String xmp) {
 		// TODO: here is where to sign stuff.
@@ -173,18 +157,9 @@ public class XMPMain {
 			receiver.PreparseReceiveMessage(message);
 		}
 
-		XMPMessage msg;
-		logger.trace(String.format("Attempting to parse message %s ...",
-				message.getBody()));
-		msg = XMPMessage.unpack(message);
-		msg.verify();
-		msg.save();
-		
-		if (msg != null) {
-			for (IMessageReceiverStrategy receiver : receivers) {
-				receiver.ReceiveMessage(msg);
-			}
-		}
+		XMPMessage msg = null;
+		UnpackAndReceiveMessage uarm = new UnpackAndReceiveMessage(this, msg, message);
+		uarm.schedule();
 	}
 
 	public Connection getConnection() {
@@ -197,6 +172,24 @@ public class XMPMain {
 	
 	protected void attemptRegistration() {
 		// TODO.
+	}
+
+	public void runReceiveHandlers(XMPMessage msg) {
+		if (msg != null) {
+			for (IMessageReceiverStrategy receiver : receivers) {
+				receiver.ReceiveMessage(msg);
+			}
+		}
+	}
+
+	/**
+	 * Don't use this function directly. instead, create and schedule a MessageDispatchCommand.
+	 * @param msg
+	 */
+	public void sendToDispatchers(XMPMessage msg) {
+		for (AbstractMessageDispatchStrategy dispatcher : dispatchers) {
+			dispatcher.DispatchMessage(msg);
+		}
 	}
 
 }

@@ -23,6 +23,10 @@ public abstract class Command implements Comparable<Command> {
 		NORMAL,
 		HIGH
 	}
+	
+	public Command(XMPMain main) {
+		this(main, null);
+	}
 
 	public Command(XMPMain main, XMPMessage msg) {
 		this.main = main;

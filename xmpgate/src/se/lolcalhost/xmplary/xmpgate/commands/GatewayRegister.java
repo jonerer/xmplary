@@ -10,6 +10,7 @@ import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.commands.Register;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
+import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 
 public class GatewayRegister extends Register {
@@ -20,6 +21,7 @@ public class GatewayRegister extends Register {
 	@Override
 	public void execute() throws SQLException, JSONException {
 		super.execute();
+		XMPNode from = msg.getOrigin();
 		if (from.getType() == NodeType.backend) {
 			XMPDb.runAsTransaction(new Callable<Void>() {
 				@Override

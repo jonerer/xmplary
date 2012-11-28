@@ -60,6 +60,8 @@ public class XMPCommandRunner extends Thread {
 			logger.error("Error in command execution: ", e);
 		} catch (AuthorizationFailureException e) {
 			logger.error("Error in command execution: ", e);
+		} catch (Exception e) {
+			logger.error("Error in command execution: ", e);
 		}
 	}
 	

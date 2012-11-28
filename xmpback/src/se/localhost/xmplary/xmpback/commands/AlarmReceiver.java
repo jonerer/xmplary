@@ -1,4 +1,4 @@
-package se.localhost.xmplary.xmpback;
+package se.localhost.xmplary.xmpback.commands;
 
 import java.sql.SQLException;
 
