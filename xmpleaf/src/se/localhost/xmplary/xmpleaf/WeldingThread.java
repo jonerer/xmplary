@@ -3,6 +3,8 @@ package se.localhost.xmplary.xmpleaf;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.joda.time.DateTime;
+
 import se.localhost.xmplary.xmpleaf.commands.SendAlarmCommand;
 import se.localhost.xmplary.xmpleaf.commands.SendStatus;
 import se.localhost.xmplary.xmpleaf.commands.SendWeldingDatapointsCommand;
@@ -12,12 +14,16 @@ import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 public class WeldingThread extends Thread {
 
 	private LeafMain main;
-	private HashMap<XMPDataPoint.DataPointField, Double> status = new HashMap<XMPDataPoint.DataPointField, Double>();
+	private HashMap<XMPDataPoint.DataPointField, Double> data = new HashMap<XMPDataPoint.DataPointField, Double>();
+	private DateTime lastStatusChange = new DateTime();
+	private WelderStatus status = WelderStatus.STOPPED;
+	
 	public enum WelderStatus {
 		RUNNING,
 		REFUELING,
 		COOLINGDOWN,
-		STOPPED
+		STOPPED, 
+		AWAIT_REFUEL
 	}
 	
 	public WeldingThread(LeafMain main) {
@@ -51,8 +57,21 @@ public class WeldingThread extends Thread {
 		}
 	}
 
-	public HashMap<XMPDataPoint.DataPointField, Double> getStatus() {
+	public HashMap<XMPDataPoint.DataPointField, Double> getData() {
+		return data;
+	}
+
+	public DateTime getLastStatusChange() {
+		return lastStatusChange;
+	}
+
+	public WelderStatus getStatus() {
 		return status;
+	}
+
+	public void setStatus(WelderStatus status) {
+		lastStatusChange = new DateTime();
+		this.status = status;
 	}
 
 }

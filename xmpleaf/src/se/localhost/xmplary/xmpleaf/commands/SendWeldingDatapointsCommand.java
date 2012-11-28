@@ -8,6 +8,8 @@ import java.util.Random;
 
 import org.json.JSONException;
 
+import se.localhost.xmplary.xmpleaf.LeafMain;
+import se.localhost.xmplary.xmpleaf.WeldingThread;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
@@ -18,27 +20,27 @@ import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 
 public class SendWeldingDatapointsCommand extends Command {
 
-	public SendWeldingDatapointsCommand(XMPMain main, XMPMessage msg) {
-		super(main, msg);
+	private WeldingThread weldingThread;
+
+	public SendWeldingDatapointsCommand(LeafMain main, WeldingThread weldingThread) {
+		super(main);
+		this.weldingThread = weldingThread;
 	}
 
 	@Override
 	public void execute() throws JSONException, SQLException,
 			AuthorizationFailureException {
-		Random r = new Random();
 		XMPMessage msg = new XMPMessage();
 		msg.setType(MessageType.DataPoints);
 		msg.setOutgoing(true);
 		msg.save();
 
 		// fill it up with a random set of data points.
-		int numDatapoints = r.nextInt(10) + 1;
+		int numDatapoints = 1;
 		List l = new ArrayList();
 		for (int i = 0; i < numDatapoints; i++) {
 			XMPDataPoint dp = new XMPDataPoint();
-			Map<DataPointField, Double> contents = dp.getContents();
-			contents.put(DataPointField.Temperature,
-					r.nextDouble() * 20 + 40);
+			dp.setContents(weldingThread.getData());
 			dp.save();
 			l.add(dp);
 		}
