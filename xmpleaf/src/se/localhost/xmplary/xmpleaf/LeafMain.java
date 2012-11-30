@@ -1,11 +1,7 @@
 package se.localhost.xmplary.xmpleaf;
 
-import java.util.HashMap;
-
 import se.localhost.xmplary.xmpleaf.strategies.LeafGatewayReceiverStrategy;
 import se.lolcalhost.xmplary.common.XMPMain;
-import se.lolcalhost.xmplary.common.models.XMPDataPoint;
-import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 import se.lolcalhost.xmplary.common.strategies.ChatDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.LoggerDispatcherStrategy;
 import se.lolcalhost.xmplary.common.strategies.LoggerReceiverStrategy;
@@ -24,6 +20,7 @@ public class LeafMain extends XMPMain {
 		dispatchers.add(new LoggerDispatcherStrategy(this));
 		receivers.add(new LoggerReceiverStrategy(this));
 		receivers.add(new LeafGatewayReceiverStrategy(this));
+		receivers.add(new BackendReceiverStrategy(this));
 		
 		keepRunning();
 	}

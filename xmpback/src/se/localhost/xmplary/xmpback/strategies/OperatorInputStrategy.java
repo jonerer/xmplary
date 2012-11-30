@@ -36,6 +36,8 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		Help,
 
 		RequestDataPoints, DumpData, ListNodes,
+		
+		GetDump
 	}
 
 	public OperatorInputStrategy(XMPMain main) {
@@ -90,12 +92,16 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	}
 
 	@Override
-	public void ReceiveMessage(XMPMessage m) {
-		switch (m.getType()) {
+	public void ReceiveMessage(XMPMessage msg) {
+		switch (msg.getType()) {
 		case IsRegistered:
-			XMPMessage.tellOperator("Is registered? " + m.getRawContents());
+			XMPMessage.tellOperator("Is registered? " + msg.getRawContents());
 			break;
 		default:
+			String format = String.format("Received message of type %s. Verified: " + msg.isVerified() + ". (o->f->t). (%s->%s->%s) Contents: %s", 
+					msg.getType().toString(),
+					msg.getOrigin().getName(), msg.getFrom().getName(), msg.getTarget().getName(), msg.getRawContents());
+			XMPMessage.tellOperator(format);
 			break;
 		}
 	}
@@ -183,6 +189,16 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 					XMPMessage.tellOperator("Couldn't save the file to"
 							+ f.getAbsolutePath() + ".");
 				}
+			}
+		});
+		handlers.put(OperatorCommand.GetDump, new InputCommandStrategy() {
+			@Override
+			public void HandleCommand(Message m) {
+				XMPMessage.tellOperator("Ok let me send request... ");
+				XMPMessage request = new XMPMessage(MessageType.DumpRequest);
+				String targetName = m.getBody().split(" ")[1];
+				request.setTarget(XMPNode.getByJID(targetName));
+				request.send();
 			}
 		});
 		handlers.put(OperatorCommand.IsRegistered, new InputCommandStrategy() {

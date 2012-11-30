@@ -1,6 +1,7 @@
 package se.lolcalhost.xmplary.xmpgate.strategies;
 
 import se.lolcalhost.xmplary.common.XMPMain;
+import se.lolcalhost.xmplary.common.commands.DumpResponse;
 import se.lolcalhost.xmplary.common.commands.IsRegistered;
 import se.lolcalhost.xmplary.common.commands.Register;
 import se.lolcalhost.xmplary.common.commands.RespondToRegistrationRequest;
@@ -31,6 +32,7 @@ public class GatewayBackendReceiverStrategy extends AbstractMessageReceiverStrat
 	protected void registerHandlers() {
 		handlerClasses.put(MessageType.Unregister, Unregister.class);
 		handlerClasses.put(MessageType.RequestDataPoints, SendDataPoints.class);
+		handlerClasses.put(MessageType.DumpRequest, DumpResponse.class);
 	}
 	
 	

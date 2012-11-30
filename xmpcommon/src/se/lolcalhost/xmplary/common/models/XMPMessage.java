@@ -29,13 +29,15 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable
-public class XMPMessage implements JSONSerializable {
+public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	public static enum MessageType {
 		Alarm,
 
 		IsRegistered, Register, Unregister, RegistrationRequest,
 
 		DebugText, DataPoints, RequestDataPoints,
+		
+		DumpRequest, DumpResponse,
 
 		Raw
 	}
@@ -242,6 +244,10 @@ public class XMPMessage implements JSONSerializable {
 		}
 		return null;
 	}
+	
+	public void setRawContents(String cts) {
+		setContents(cts);
+	}
 
 	public void setContents(Object contents) {
 		try {
@@ -271,10 +277,10 @@ public class XMPMessage implements JSONSerializable {
 			throw new IllegalArgumentException();
 		}
 	}
-
-	public XMPMessage createResponse() {
+	
+	public XMPMessage createResponse(MessageType type) {
 		XMPMessage m = new XMPMessage(type);
-		m.setTarget(from);
+		m.setTarget(origin);
 		m.setOutgoing(true);
 		m.setResponseToId(getOriginalId());
 		m.setResponseToNode(getOrigin());
@@ -284,6 +290,10 @@ public class XMPMessage implements JSONSerializable {
 			logger.error("Couldn't unpack contents of message to respond to", e);
 		}
 		return m;
+	}
+
+	public XMPMessage createResponse() {
+		return createResponse(type);
 	}
 
 	public String serialized() {
@@ -341,10 +351,6 @@ public class XMPMessage implements JSONSerializable {
 			origin = XMPNode.createByJID(string);
 		}
 		signature = stream.getString("signature");
-	}
-
-	public void sign() {
-		setSignature("sign_of_" + id + " by " + from.getName());
 	}
 
 	public JSONObject asJSONObject() {
@@ -495,6 +501,14 @@ public class XMPMessage implements JSONSerializable {
 				conts + origin.getName() + getOriginalId(), key, signature);
 		return verified;
 	}
+	
+	public void decrypt() {
+		contents = XMPCrypt.decrypt(contents);
+	}
+	
+	public void encrypt() {
+		contents = XMPCrypt.encrypt(contents, target);
+	}
 
 	public void setSignature(String signature) {
 		this.signature = signature;
@@ -523,5 +537,7 @@ public class XMPMessage implements JSONSerializable {
 	public boolean isResponse() {
 		return responseToId != 0;
 	}
+	
+
 
 }

@@ -19,6 +19,9 @@ public class SwitchboardReceiverStrategy extends
 	protected void registerHandlers() {
 		handlerClasses.put(MessageType.RegistrationRequest, SwitchboardCommand.class);
 		handlerClasses.put(MessageType.Register, SwitchboardCommand.class);
+
+		handlerClasses.put(MessageType.DumpRequest, SwitchboardCommand.class);
+		handlerClasses.put(MessageType.DumpResponse, SwitchboardCommand.class);
 	}
 
 	@Override

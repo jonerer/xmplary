@@ -35,18 +35,18 @@ public class WeldingThread extends Thread {
 	public void run() {
 		Random r = new Random();
 		while (true) {
-			SetSampleValues ssv = new SetSampleValues(main, this);
-			ssv.schedule();
+//			SetSampleValues ssv = new SetSampleValues(main, this);
+//			ssv.schedule();
 			
 			SendStatus ss = new SendStatus(main, this);
-			if (r.nextFloat() < 0.3) {
+			if (r.nextFloat() < 0.01) {
 				SendAlarmCommand sac = new SendAlarmCommand(main, null);
 				sac.schedule();
 				// main.pushMessage(" -- ALARM: TEMPERATURE HIGH --");
 			} else {
 				// create a message to send
-				SendWeldingDatapointsCommand cmd = new SendWeldingDatapointsCommand(main, null);
-				cmd.schedule();
+//				SendWeldingDatapointsCommand cmd = new SendWeldingDatapointsCommand(main, null);
+//				cmd.schedule();
 			}
 			try {
 				Thread.sleep((long) (r.nextFloat() * 1000));
