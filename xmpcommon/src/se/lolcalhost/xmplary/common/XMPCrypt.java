@@ -12,6 +12,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateExpiredException;
@@ -19,14 +20,9 @@ import java.security.cert.CertificateNotYetValidException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.ShortBufferException;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.engines.AESEngine;
@@ -35,6 +31,7 @@ import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.util.encoders.Hex;
@@ -186,6 +183,7 @@ public class XMPCrypt {
 	}
 
 	public static void init() {
+		Security.addProvider(new BouncyCastleProvider());
 		getTrustedCerts();
 
 		// X509CertificateObject certificate = XMPConfig.getCertificate();
@@ -244,35 +242,22 @@ public class XMPCrypt {
     // The initialization vector needed by the CBC mode
     byte[] IV = null;
     
-	public String decrypt(String contents) {
+	public static String decrypt(String contents) {
 		InputStream is = new ByteArrayInputStream(contents.getBytes());
 		OutputStream os = new ByteArrayOutputStream();
-		BouncyCastleAPI_AES_CBC aes = new BouncyCastleAPI_AES_CBC(getKey().getPublic().getEncoded());
-		aes.InitCiphers();
+		byte[] key = getKey().getPublic().getEncoded();
+		byte[] actualkey = new byte[32];
+		System.arraycopy(key, 0, actualkey, 0, 32);
+		BouncyCastleProvider_AES_CBC aes = new BouncyCastleProvider_AES_CBC(actualkey, new byte[BouncyCastleProvider_AES_CBC.blockSize]);
 		try {
-			aes.CBCEncrypt(is, os);
-		} catch (DataLengthException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ShortBufferException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidCipherTextException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			aes.InitCiphers();
+			aes.CBCDecrypt(is, os);
+		} catch (Exception e) {
+			logger.error("Error in decryption. ", e);
 			e.printStackTrace();
 		}
+		String result = os.toString();
+		return result;
 		
 //		String decrypted = null;
 //		try {
@@ -314,7 +299,6 @@ public class XMPCrypt {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		return null;
 	}
 
 	/**
@@ -324,7 +308,21 @@ public class XMPCrypt {
 	 * @return
 	 */
 	public static String encrypt(String contents, XMPNode target) {
-		return null;
+		InputStream is = new ByteArrayInputStream(contents.getBytes());
+		OutputStream os = new ByteArrayOutputStream();
+		byte[] key = target.getCert().getPublicKey().getEncoded();
+		byte[] actualkey = new byte[32];
+		System.arraycopy(key, 0, actualkey, 0, 32);
+		BouncyCastleProvider_AES_CBC aes = new BouncyCastleProvider_AES_CBC(actualkey, new byte[BouncyCastleProvider_AES_CBC.blockSize]);
+		try {
+			aes.InitCiphers();
+			aes.CBCEncrypt(is, os);
+		} catch (Exception e) {
+			logger.error("Error in encryption. ", e);
+			e.printStackTrace();
+		}
+		String result = os.toString();
+		return result;
 	}
 
 }

@@ -37,6 +37,9 @@ public class UnpackAndReceiveMessage extends Command {
 		
 		if (msg != null) {
 			msg.verify();
+			if (msg.shoudDecrypt()) {
+				boolean couldDecrypt = msg.decrypt();
+			}
 			logger.info("Message parsed! It's of type " + msg.getType() + ". Verified: " + msg.isVerified());
 			msg.save();
 			

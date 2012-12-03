@@ -196,11 +196,11 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 			logger.trace("Parsing successful.");
 
 			JSONObject jo;
-			jo = new JSONObject(message.getBody());
+			String body = message.getBody();
+			jo = new JSONObject(body);
 			msg.readObject(jo);
 
-
-			if (jo.has("contents")) {
+			if (jo.has("contents") && !jo.get("contents").equals("")) {
 				msg.setContents(jo.get("contents"));
 			}
 
@@ -502,12 +502,23 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return verified;
 	}
 	
-	public void decrypt() {
-		contents = XMPCrypt.decrypt(contents);
+	public boolean decrypt() {
+		String newconts = XMPCrypt.decrypt(contents);
+		if (newconts != null) {
+			contents = newconts;
+			return true;
+		}
+		return false;
 	}
 	
-	public void encrypt() {
-		contents = XMPCrypt.encrypt(contents, target);
+	public boolean encrypt() {
+		String conts = contents == null ? "": contents;
+		String newconts = XMPCrypt.encrypt(conts, target);
+		if (newconts != null) {
+			contents = newconts;
+			return true;
+		}
+		return false;
 	}
 
 	public void setSignature(String signature) {
@@ -536,6 +547,20 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 
 	public boolean isResponse() {
 		return responseToId != 0;
+	}
+
+	public boolean shouldEncrypt() {
+		if (getTarget().getType() == NodeType.operator) {
+			return false;
+		}
+		if (type == MessageType.Register || type == MessageType.RegistrationRequest) {
+			return false;
+		}
+		return true;
+	}
+
+	public boolean shoudDecrypt() {
+		return shouldEncrypt(); // guess they're the same so far.
 	}
 	
 
