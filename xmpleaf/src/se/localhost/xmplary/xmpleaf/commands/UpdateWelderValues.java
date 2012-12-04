@@ -15,7 +15,7 @@ import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
-public class SetSampleValues extends Command {
+public class UpdateWelderValues extends Command {
 	private static final double WELDSPEED = 4;
 	private static final double FUEL_REFILL_DRAIN = -0.1;
 	private static final double FUEL_DRAIN = 0.01;
@@ -29,7 +29,7 @@ public class SetSampleValues extends Command {
 	private HashMap<DataPointField, Double> data;
 	private WelderStatus state;
 
-	public SetSampleValues(LeafMain main, WeldingThread weldingThread) {
+	public UpdateWelderValues(LeafMain main, WeldingThread weldingThread) {
 		super(main);
 		this.weldingThread = weldingThread;
 	}

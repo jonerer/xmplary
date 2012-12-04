@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.crypto.SecretKey;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.openssl.PEMReader;
@@ -21,12 +23,15 @@ import org.json.JSONObject;
 import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
+import se.lolcalhost.xmplary.common.commands.Command.CommandPriority;
 import se.lolcalhost.xmplary.common.commands.MessageDispatchCommand;
 import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
+import edu.vt.middleware.crypt.util.Base64Converter;
 
 @DatabaseTable
 public class XMPMessage implements JSONSerializable, abstractXMPMessage {
@@ -100,6 +105,10 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	public static final String VERIFIED = "verified";
 	@DatabaseField(canBeNull = false, columnName = VERIFIED)
 	private boolean verified;
+
+	private String key;
+
+	private String iv;
 
 	private static XMPMain main;
 
@@ -186,6 +195,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 			} else {
 				logger.trace("Sender node identified.");
 			}			
+			
 			msg.setFrom(from);
 
 			if (from.equals(XMPNode.getSelf())) {
@@ -321,6 +331,10 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 			stream.put("signature", getSignature());
 
 			stream.put("response_to_id", responseToId);
+			
+			stream.put("iv", iv);
+			
+			stream.put("key", key);
 
 			if (responseToId != 0) {
 				stream.put("response_to_node", responseToNode.getName());
@@ -349,6 +363,12 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		origin = XMPNode.getByJID(string);
 		if (origin == null) {
 			origin = XMPNode.createByJID(string);
+		}
+		if (stream.has("iv")) {
+			iv = stream.getString("iv");
+		}
+		if (stream.has("key")) {
+			key = stream.getString("key");
 		}
 		signature = stream.getString("signature");
 	}
@@ -409,7 +429,12 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	}
 
 	public void send() {
+		send(CommandPriority.NORMAL);
+	}
+	
+	public void send(CommandPriority prio) {
 		MessageDispatchCommand cmd = new MessageDispatchCommand(main, this);
+		cmd.setPriority(prio);
 		cmd.schedule();
 	}
 
@@ -464,6 +489,14 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 			return XMPNode.getGateway();
 		}
 	}
+	
+	/**
+	 * Creates a signature and applies it.
+	 */
+	public void sign() {
+		String conts = contents == null ? "" : contents;
+		signature = XMPCrypt.sign(conts + origin.getName() + getOriginalId());
+	}
 
 	/**
 	 * Return the signature. Or, if one doesn't exist and this is from self,
@@ -472,10 +505,6 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	 * @return
 	 */
 	public String getSignature() {
-		if (signature == null && from.equals(XMPNode.getSelf())) {
-			String conts = contents == null ? "" : contents;
-			return XMPCrypt.sign(conts + origin.getName() + getOriginalId());
-		}
 		return signature;
 	}
 
@@ -503,19 +532,33 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	}
 	
 	public boolean decrypt() {
-		String newconts = XMPCrypt.decrypt(contents);
-		if (newconts != null) {
-			contents = newconts;
-			return true;
+		if (contents != null) {
+			SecretKey decryptedKey = XMPCrypt.decryptKey(key);
+			Base64Converter conv = new Base64Converter();
+			byte[] bytes = conv.toBytes(iv);
+			String newconts = XMPCrypt.decryptMessage(contents, decryptedKey, bytes);
+			
+//			contents
+			if (newconts != null) {
+				contents = newconts;
+				return true;
+			}
 		}
 		return false;
 	}
 	
 	public boolean encrypt() {
-		String conts = contents == null ? "": contents;
-		String newconts = XMPCrypt.encrypt(conts, target);
-		if (newconts != null) {
-			contents = newconts;
+		if (contents != null) {
+			SecretKey newKey = XMPCrypt.generateKey();
+			byte[] initvector = XMPCrypt.generateIV();
+			String encryptedconts = XMPCrypt.encryptMessage(contents, newKey, initvector);
+			String targetedKey = XMPCrypt.encryptKey(newKey, target);
+			
+			
+			contents = encryptedconts;
+			key = targetedKey;
+			Base64Converter base64Converter = new Base64Converter();
+			iv = base64Converter.fromBytes(initvector);
 			return true;
 		}
 		return false;
@@ -550,7 +593,10 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	}
 
 	public boolean shouldEncrypt() {
-		if (getTarget().getType() == NodeType.operator) {
+//		if (getTarget().getType() == NodeType.operator) {
+//			return false;
+//		}
+		if (type == MessageType.Raw) {
 			return false;
 		}
 		if (type == MessageType.Register || type == MessageType.RegistrationRequest) {
@@ -562,7 +608,23 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	public boolean shoudDecrypt() {
 		return shouldEncrypt(); // guess they're the same so far.
 	}
+
+	public boolean shouldVerify() {
+		if (!target.equals(XMPNode.getSelf())) {
+			return false;
+		}
+		if (type == MessageType.Register || type == MessageType.RegistrationRequest) {
+			return false;
+		}
+		return true;
+	}
 	
+	public boolean shouldSign() {
+		return origin.equals(XMPNode.getSelf());
+	}
 
-
+	@Override
+	public String toString() {
+		return this.getClass().getName() + " of type " + type.name();
+	}
 }

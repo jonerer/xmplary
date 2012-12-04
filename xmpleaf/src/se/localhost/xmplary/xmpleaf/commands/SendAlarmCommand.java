@@ -14,6 +14,7 @@ public class SendAlarmCommand extends Command {
 
 	public SendAlarmCommand(XMPMain main, XMPMessage msg) {
 		super(main, msg);
+		setPriority(CommandPriority.HIGH);
 	}
 
 	@Override
@@ -22,7 +23,7 @@ public class SendAlarmCommand extends Command {
 		XMPMessage msg = new XMPMessage();
 		msg.setContents("Temperature High");
 		msg.setType(MessageType.Alarm);
-		msg.send();
+		msg.send(priority);
 	}
 
 }

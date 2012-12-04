@@ -15,7 +15,7 @@ import se.lolcalhost.xmplary.common.models.XMPNode;
 public class Register extends Command {
 	public Register(XMPMain main, XMPMessage msg) {
 		super(main, msg);
-		setPriority(CommandPriority.HIGH);
+		setPriority(CommandPriority.URGENT);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -31,6 +31,12 @@ public class Register extends Command {
 //			TODO: activate this once I'm sure of it.
 //			ReValidateCommand vld = new ReValidateCommand(main, msg);
 //			vld.schedule();
+			
+			// TODO: re-send things that have not been deliverable
+			// this isn't really used anymore since a failed delivery will schedule itself.
+			// but it could be useful for old stuff lying around.
+//			ReTryDelivery rtd = new ReTryDelivery(main, origin);
+//			rtd.schedule();
 		} else {
 			origin.setRegistered(false);
 		}

@@ -32,7 +32,8 @@ public class XMPDb {
 		} catch (ClassNotFoundException e1) {
 			e1.printStackTrace();
 		}
-		String databaseUrl = "jdbc:sqlite:" + XMPConfig.Database();
+//		String databaseUrl = "jdbc:sqlite:" + XMPConfig.Database();
+		String databaseUrl = "jdbc:sqlite::memory:";
 		try {
 			connectionSource = new JdbcConnectionSource(databaseUrl);
 

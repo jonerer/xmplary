@@ -28,5 +28,7 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/xmpcommon/lib/joda-time-2.1-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/vt-crypt-2.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

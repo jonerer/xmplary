@@ -17,11 +17,14 @@ public abstract class Command implements Comparable<Command> {
 	protected XMPMessage msg;
 	protected XMPMain main;
 	protected static Logger logger = Logger.getLogger(Command.class);
-	private CommandPriority priority;
+	protected CommandPriority priority;
 	public enum CommandPriority {
 		LOW,
 		NORMAL,
-		HIGH
+		HIGH,
+		INCOMING,
+		SEMIURGENT,
+		URGENT,
 	}
 	
 	public Command(XMPMain main) {
@@ -41,8 +44,21 @@ public abstract class Command implements Comparable<Command> {
 	
 	@Override
 	public int compareTo(Command arg0) {
-		return priority.ordinal() - arg0.getPriority().ordinal();
+        if(this.priority.ordinal()<arg0.getPriority().ordinal()){
+            return 1;
+         }
+         else if(this.priority.ordinal() == arg0.getPriority().ordinal()){
+            return 0;
+          }
+         else{
+            return -1;
+          }
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getName();
+	};
 
 	public CommandPriority getPriority() {
 		return priority;

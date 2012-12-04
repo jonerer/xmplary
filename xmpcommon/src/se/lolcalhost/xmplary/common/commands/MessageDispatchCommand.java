@@ -26,13 +26,25 @@ public class MessageDispatchCommand extends Command {
 	public void execute() throws JSONException, SQLException,
 			AuthorizationFailureException {
 		// TODO: should stuff be signed here?
-		msg.setDelivered(true); // TODO: maybe do this later, after getting
-								// an ACK?
+		msg.setDelivered(false);
 		msg.setOutgoing(true);
 
+		msg.save(); // save before signing so i'm sure it has an ID.
+		if (msg.shouldSign()) {
+			msg.sign();
+		}
 		if (msg.shouldEncrypt()) {
+			if (msg.getTarget().isRegistered() == false) {
+				RequestRegistrationCommand cmd = new RequestRegistrationCommand(main, msg.getTarget());
+				cmd.schedule();
+				this.schedule();
+				msg.save();
+				return;
+			}
 			msg.encrypt();
 		}
+		msg.setDelivered(true); // TODO: maybe do this later, after getting
+		// an ACK?
 		msg.save();
 		main.sendToDispatchers(msg);
 	}

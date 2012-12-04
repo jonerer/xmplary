@@ -8,8 +8,10 @@ import org.joda.time.DateTime;
 import se.localhost.xmplary.xmpleaf.commands.SendAlarmCommand;
 import se.localhost.xmplary.xmpleaf.commands.SendStatus;
 import se.localhost.xmplary.xmpleaf.commands.SendWeldingDatapointsCommand;
-import se.localhost.xmplary.xmpleaf.commands.SetSampleValues;
+import se.localhost.xmplary.xmpleaf.commands.UpdateWelderValues;
+import se.lolcalhost.xmplary.common.XMPCommandRunner;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
+import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
 public class WeldingThread extends Thread {
 
@@ -30,23 +32,33 @@ public class WeldingThread extends Thread {
 		super("WeldingThread");
 		this.main = main;
 	}
+	
+	protected void initWelder() {
+		data.put(DataPointField.Cheeseburgers, 2d);
+		data.put(DataPointField.FuelDrain, 0d);
+		data.put(DataPointField.FuelRemaining, 10d);
+		data.put(DataPointField.VoodooMagic, 2d);
+		data.put(DataPointField.Weldspeed, 2d);
+		data.put(DataPointField.Temperature, 2d);
+	}
 
 	@Override
 	public void run() {
 		Random r = new Random();
+		initWelder();
 		while (true) {
-//			SetSampleValues ssv = new SetSampleValues(main, this);
-//			ssv.schedule();
+			UpdateWelderValues ssv = new UpdateWelderValues(main, this);
+			ssv.schedule();
 			
-			SendStatus ss = new SendStatus(main, this);
-			if (r.nextFloat() < 0.01) {
+//			SendStatus ss = new SendStatus(main, this);
+			if (r.nextFloat() < 0.5) {
 				SendAlarmCommand sac = new SendAlarmCommand(main, null);
 				sac.schedule();
 				// main.pushMessage(" -- ALARM: TEMPERATURE HIGH --");
 			} else {
 				// create a message to send
-//				SendWeldingDatapointsCommand cmd = new SendWeldingDatapointsCommand(main, null);
-//				cmd.schedule();
+				SendWeldingDatapointsCommand cmd = new SendWeldingDatapointsCommand(main, this);
+				cmd.schedule();
 			}
 			try {
 				Thread.sleep((long) (r.nextFloat() * 1000));
@@ -54,6 +66,12 @@ public class WeldingThread extends Thread {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			int queuesize = XMPCommandRunner.getQueueSize();
+			if (queuesize > 100) {
+				
+			}
+			
 		}
 	}
 

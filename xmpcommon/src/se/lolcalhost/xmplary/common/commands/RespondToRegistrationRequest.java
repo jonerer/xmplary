@@ -14,6 +14,7 @@ public class RespondToRegistrationRequest extends Command {
 
 	public RespondToRegistrationRequest(XMPMain main, XMPMessage msg) {
 		super(main, msg);
+		setPriority(CommandPriority.URGENT);
 	}
 
 	@Override
@@ -22,7 +23,7 @@ public class RespondToRegistrationRequest extends Command {
 		XMPMessage xmpMessage = new XMPMessage(MessageType.Register);
 		xmpMessage.setContents(XMPCrypt.getCertificate());
 		xmpMessage.setTarget(msg.getOrigin());
-		xmpMessage.send();
+		xmpMessage.send(priority);
 	}
 
 }

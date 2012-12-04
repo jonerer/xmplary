@@ -24,7 +24,7 @@ public class UnpackAndReceiveMessage extends Command {
 	public UnpackAndReceiveMessage(XMPMain xmpMain, XMPMessage msg,
 			Message message) {
 		super(xmpMain, msg);
-		setPriority(CommandPriority.LOW);
+		setPriority(CommandPriority.INCOMING);
 		this.message = message;
 	}
 
@@ -36,15 +36,17 @@ public class UnpackAndReceiveMessage extends Command {
 		msg = XMPMessage.unpack(message);
 		
 		if (msg != null) {
-			msg.verify();
 			if (msg.shoudDecrypt()) {
-				boolean couldDecrypt = msg.decrypt();
+				msg.decrypt();
 			}
-			logger.info("Message parsed! It's of type " + msg.getType() + ". Verified: " + msg.isVerified());
+			if (msg.shouldVerify()) {
+				msg.verify();
+			}
+			logger.info("Message parsed! It's of type " + msg.getType() + ". Verified: " + (msg.shouldVerify() ? msg.isVerified() : ""));
 			msg.save();
 			
 			main.runReceiveHandlers(msg);
-			if (!msg.isVerified() && msg.getType() != MessageType.Raw) {
+			if (msg.shouldVerify() && !msg.isVerified()) {
 				RequestRegistrationCommand rrc = new RequestRegistrationCommand(main, msg);
 				rrc.schedule();
 			}

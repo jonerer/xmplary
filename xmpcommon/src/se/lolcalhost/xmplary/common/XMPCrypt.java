@@ -1,13 +1,10 @@
 package se.lolcalhost.xmplary.common;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -18,25 +15,29 @@ import java.security.SignatureException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
-import org.bouncycastle.crypto.modes.CBCBlockCipher;
-import org.bouncycastle.crypto.paddings.PKCS7Padding;
-import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
-import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.util.encoders.Hex;
 
 import se.lolcalhost.xmplary.common.models.XMPNode;
+import edu.vt.middleware.crypt.CryptException;
+import edu.vt.middleware.crypt.asymmetric.AsymmetricAlgorithm;
+import edu.vt.middleware.crypt.asymmetric.RSA;
+import edu.vt.middleware.crypt.digest.SHA512;
+import edu.vt.middleware.crypt.pbe.PKCS12KeyGenerator;
+import edu.vt.middleware.crypt.symmetric.AES;
+import edu.vt.middleware.crypt.symmetric.SymmetricAlgorithm;
+import edu.vt.middleware.crypt.util.Base64Converter;
 
 public class XMPCrypt {
 	protected static Logger logger = Logger.getLogger(XMPCrypt.class);
@@ -139,6 +140,12 @@ public class XMPCrypt {
 		return keyPair;
 	}
 
+	/**
+	 * Sign some data with my private key, so that others can verify it.
+	 * 
+	 * @param data
+	 * @return
+	 */
 	public static String sign(String data) {
 		String sign = null;
 		try {
@@ -160,6 +167,14 @@ public class XMPCrypt {
 		return sign;
 	}
 
+	/**
+	 * Verify the given data against the given public key and signature.
+	 * 
+	 * @param data
+	 * @param pubkey
+	 * @param signature
+	 * @return
+	 */
 	public static boolean verify(String data, PublicKey pubkey, String signature) {
 		try {
 			Signature verifier = Signature
@@ -185,40 +200,58 @@ public class XMPCrypt {
 	public static void init() {
 		Security.addProvider(new BouncyCastleProvider());
 		getTrustedCerts();
-
-		// X509CertificateObject certificate = XMPConfig.getCertificate();
-		// KeyPair key = XMPConfig.getKey();
-		// PublicKey k1 = certificate.getPublicKey();
-		// PublicKey k2 = key.getPublic();
 	}
 	
-	private byte[] decryptWithLWCrypto(byte[] cipher, String password, byte[] salt, final  int iterationCount)
-	        throws Exception
-	{
-	    PKCS12ParametersGenerator pGen = new PKCS12ParametersGenerator(new SHA256Digest());
-	    char[] passwordChars = password.toCharArray();
-	    final byte[] pkcs12PasswordBytes = PBEParametersGenerator
-	            .PKCS12PasswordToBytes(passwordChars);
-	    pGen.init(pkcs12PasswordBytes, salt, iterationCount);
-	    CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
-	    ParametersWithIV aesCBCParams = (ParametersWithIV) pGen.generateDerivedParameters(256, 128);
-	    aesCBC.init(false, aesCBCParams);
-	    PaddedBufferedBlockCipher aesCipher = new PaddedBufferedBlockCipher(aesCBC,
-	            new PKCS7Padding());
-	    byte[] plainTemp = new byte[aesCipher.getOutputSize(cipher.length)];
-	    int offset = aesCipher.processBytes(cipher, 0, cipher.length, plainTemp, 0);
-	    int last = aesCipher.doFinal(plainTemp, offset);
-	    final byte[] plain = new byte[offset + last];
-	    System.arraycopy(plainTemp, 0, plain, 0, plain.length);
-	    return plain;
+	public static SecretKey decryptKey(String contents) {
+		final AsymmetricAlgorithm alg = new RSA();
+		alg.setKey(getKey().getPrivate());
+		byte[] result = null;
+		SecretKey key = null;
+		try {
+			alg.initDecrypt();
+			result = alg.decrypt(contents, new Base64Converter());
+			key = new SecretKeySpec(result, "AES");
+		} catch (CryptException e) {
+			logger.error("Error in encryption. ", e);
+			e.printStackTrace();
+		}
+		return key;
 	}
 	
-	public static void getSymmetricKey() {
-//		KeyGen256 keyGen256 = new AES.KeyGen256();
-//		keyGen256.
-//		AESEngine aesEngine = new AESEngine();
+	public static SecretKey generateKey() {
+//		final KeyWithIV keyWithIV = PKCS12KeyGenerator.generatePkcs12(
+//				  passChars,
+//				  256,
+//				  new SHA512(),
+//				  salt);
+//		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+//		KeySpec spec = new PBEKeySpec(password, salt, 1024, 256);
+//		SecretKey tmp = factory.generateSecret(spec);
+//		SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+//		return secret;
+		
+		// this compiles: :p
+//		KeyGenerator gen;
+//		try {
+//			gen = KeyGenerator.getInstance("PBKDF2WithHmaxSHA1");
+//			SecretKey key = gen.generateKey();
+//			return key;
+//		} catch (Exception e) {
+//			logger.error("Couldn't generate key", e);
+//		}
+//		edu.vt.middleware.crypt.symmetric.SecretKeyUtils();
+		KeyGenerator gen;
+		try {
+			gen = KeyGenerator.getInstance("AES");
+			gen.init(256);
+			SecretKey key = gen.generateKey();
+			return key;
+		} catch (Exception e) {
+			logger.error("Couldn't generate key", e);
+		}
+		return null;
 	}
-
+		
 	/**
 	 * Decrypt with my private key.
 	 * borrowing from http://www.itcsolutions.eu/2011/08/24/how-to-encrypt-decrypt-files-in-java-with-aes-in-cbc-mode-using-bouncy-castle-api-and-netbeans-or-eclipse/
@@ -226,103 +259,231 @@ public class XMPCrypt {
 	 * @param contents
 	 * @return
 	 */
-	
-    // The default block size
-    public static int blockSize = 16;
- 
-    Cipher encryptCipher = null;
-    Cipher decryptCipher = null;
- 
-    // Buffer used to transport the bytes from one stream to another
-    byte[] buf = new byte[blockSize];       //input buffer
-    byte[] obuf = new byte[512];            //output buffer
- 
-    // The key
-    byte[] key = null;
-    // The initialization vector needed by the CBC mode
-    byte[] IV = null;
-    
-	public static String decrypt(String contents) {
-		InputStream is = new ByteArrayInputStream(contents.getBytes());
-		OutputStream os = new ByteArrayOutputStream();
-		byte[] key = getKey().getPublic().getEncoded();
-		byte[] actualkey = new byte[32];
-		System.arraycopy(key, 0, actualkey, 0, 32);
-		BouncyCastleProvider_AES_CBC aes = new BouncyCastleProvider_AES_CBC(actualkey, new byte[BouncyCastleProvider_AES_CBC.blockSize]);
-		try {
-			aes.InitCiphers();
-			aes.CBCDecrypt(is, os);
-		} catch (Exception e) {
-			logger.error("Error in decryption. ", e);
-			e.printStackTrace();
-		}
-		String result = os.toString();
-		return result;
-		
-//		String decrypted = null;
+	public static String encryptKey(SecretKey newKey, XMPNode target) {
+//		InputStream is = new ByteArrayInputStream(contents.getBytes());
+//		OutputStream os = new ByteArrayOutputStream();
+//		byte[] key = target.getCert().getPublicKey().getEncoded();
+//		byte[] actualkey = new byte[32];
+//		System.arraycopy(key, 0, actualkey, 0, 32);
+//		BouncyCastleProvider_AES_CBC aes = new BouncyCastleProvider_AES_CBC(actualkey, new byte[BouncyCastleProvider_AES_CBC.blockSize]);
 //		try {
-//			Base64Encoder enc = new Base64Encoder();
-//			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-//			cipher.init(Cipher.DECRYPT_MODE, getKey().getPrivate());
-//			decrypted = cipher.dofi
-//		} catch (NoSuchAlgorithmException e) {
-//			logger.error("Couldn't decrypt contents", e);
-//		} catch (NoSuchPaddingException e) {
-//			logger.error("Couldn't decrypt contents", e);
-//		} catch (InvalidKeyException e) {
-//			logger.error("Couldn't decrypt contents", e);
-//		}//		String decrypted = null;
-//		try {
-//		       SecretKey keyValue = new SecretKeySpec(key,"AES");
-//	       //3. create the IV
-//	       AlgorithmParameterSpec IVspec = new IvParameterSpec(IV);
-//	       //4. init the cipher
-//	       encryptCipher.init(Cipher.ENCRYPT_MODE, keyValue, IVspec);
-//	 
-//	       //1 create the cipher
-//	       decryptCipher =
-//	               Cipher.getInstance("AES/CBC/PKCS5Padding");
-//	       //2. the key is already created
-//	       //3. the IV is already created
-//	       //4. init the cipher
-//	       decryptCipher.init(Cipher.DECRYPT_MODE, keyValue, IVspec);
-//	       
-////			cipher.init(Cipher.DECRYPT_MODE, getKey().getPrivate());
-////			decrypted = cipher.dofi
-//		} catch (NoSuchAlgorithmException e) {
-//			logger.error("Couldn't decrypt contents", e);
-//		} catch (NoSuchPaddingException e) {
-//			logger.error("Couldn't decrypt contents", e);
-//		} catch (InvalidKeyException e) {
-//			logger.error("Couldn't decrypt contents", e);
-//		} catch (InvalidAlgorithmParameterException e) {
-//			// TODO Auto-generated catch block
+//			aes.InitCiphers();
+//			aes.CBCEncrypt(is, os);
+//		} catch (Exception e) {
+//			logger.error("Error in encryption. ", e);
 //			e.printStackTrace();
 //		}
-	}
-
-	/**
-	 * Encrypt to the public key of target node.
-	 * @param contents
-	 * @param target
-	 * @return
-	 */
-	public static String encrypt(String contents, XMPNode target) {
-		InputStream is = new ByteArrayInputStream(contents.getBytes());
-		OutputStream os = new ByteArrayOutputStream();
-		byte[] key = target.getCert().getPublicKey().getEncoded();
-		byte[] actualkey = new byte[32];
-		System.arraycopy(key, 0, actualkey, 0, 32);
-		BouncyCastleProvider_AES_CBC aes = new BouncyCastleProvider_AES_CBC(actualkey, new byte[BouncyCastleProvider_AES_CBC.blockSize]);
+//		String result = os.toString();
+//		return result;
+		final AsymmetricAlgorithm alg = new RSA();
+		alg.setKey(target.getCert().getPublicKey());
+		String result = null;
 		try {
-			aes.InitCiphers();
-			aes.CBCEncrypt(is, os);
-		} catch (Exception e) {
+			alg.initEncrypt();
+			result = alg.encrypt(newKey.getEncoded(), new Base64Converter());
+		} catch (CryptException e) {
 			logger.error("Error in encryption. ", e);
 			e.printStackTrace();
 		}
-		String result = os.toString();
 		return result;
 	}
 
+	/**
+	 * https://code.google.com/p/vt-middleware/wiki/vtcrypt#Code_Samples
+	 * 
+	 * @param conts
+	 * @param targetedKey
+	 * @return
+	 */
+	public static String encryptMessage(String conts, SecretKey key, byte[] iv) {
+		final SymmetricAlgorithm alg = new AES();
+//		byte[] generated = pkcs12KeyGenerator.generate(key, 256);
+		alg.setKey(key);
+		alg.setIV(iv);
+		String message = null;
+		
+		byte[] c2 = conts.getBytes();
+		String back = c2.toString();
+		
+		Base64Converter conv = new Base64Converter();
+		
+		byte[] c3 = conv.toBytes(conts);
+		String back2 = conv.fromBytes(c3);
+		
+		byte[] c4 = DatatypeConverter.parseBase64Binary(conts);
+		String back3 = DatatypeConverter.printBase64Binary(c4);
+		
+		
+		
+		try {
+			byte[] c5 = conts.getBytes("UTF-8");
+			String back4 = c5.toString();
+			String back5 = c5.toString();
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+//		Arrays.toString(conts.getBytes())
+		try {
+			alg.initEncrypt();
+//			byte[] bytes = conv.toBytes(conts);
+			message = alg.encrypt(conts.getBytes(), new Base64Converter()).toString();
+		} catch (CryptException e) {
+			logger.error("is problem: ", e);
+		}
+		return message;
+//		pkcs12KeyGenerator.
+		
+//		alg.setKey(targetedKey);
+//		alg.setIV(keyWithIV.getIV());
+//		alg.setKey(keyWithIV.getKey());
+//		  alg.encrypt(in, out);
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param conts
+	 * @param targetedKey
+	 * @return
+	 */
+	/**
+	 * https://code.google.com/p/vt-middleware/wiki/vtcrypt#Code_Samples
+	 * 
+	 * using http://stackoverflow.com/questions/6684665/java-byte-array-to-string-to-byte-array
+	 * in lieu of a good base64 encoder.
+	 * 
+	 * 
+	 * @param conts
+	 * @param key
+	 * @param iv
+	 * @return
+	 */
+	public static String decryptMessage(String conts, SecretKey key, byte[] iv) {
+		final SymmetricAlgorithm alg = new AES();
+		alg.setKey(key);
+		alg.setIV(iv);
+		String message = null;
+//		Base64Converter conv = new Base64Converter();
+		
+		try {
+			alg.initDecrypt();
+			byte[] bytes = alg.decrypt(conts, new Base64Converter());
+//			message = conv.fromBytes(bytes);
+			
+			message = new String(bytes);
+		} catch (CryptException e) {
+			logger.error("is problem: ", e);
+		}
+		return message;
+//		pkcs12KeyGenerator.
+		
+//		alg.setKey(targetedKey);
+//		alg.setIV(keyWithIV.getIV());
+//		alg.setKey(keyWithIV.getKey());
+//		  alg.encrypt(in, out);
+	}
+
+	public static byte[] generateIV() {
+		final SymmetricAlgorithm alg = new AES();
+		byte[] randomIV = alg.getRandomIV();
+		return randomIV;
+	}
+
+//	/**
+//	 * Encrypt to the public key of target node.
+//	 * @param contents
+//	 * @param target
+//	 * @return
+//	 */
+//	public static String encrypt(String contents, XMPNode target) {
+//		InputStream is = new ByteArrayInputStream(contents.getBytes());
+//		OutputStream os = new ByteArrayOutputStream();
+//		byte[] key = target.getCert().getPublicKey().getEncoded();
+//		byte[] actualkey = new byte[32];
+//		System.arraycopy(key, 0, actualkey, 0, 32);
+//		BouncyCastleProvider_AES_CBC aes = new BouncyCastleProvider_AES_CBC(actualkey, new byte[BouncyCastleProvider_AES_CBC.blockSize]);
+//		try {
+//			aes.InitCiphers();
+//			aes.CBCEncrypt(is, os);
+//		} catch (Exception e) {
+//			logger.error("Error in encryption. ", e);
+//			e.printStackTrace();
+//		}
+//		String result = os.toString();
+//		return result;
+//	}
+//  // The default block size
+//  public static int blockSize = 16;
+//
+//  Cipher encryptCipher = null;
+//  Cipher decryptCipher = null;
+//
+//  // Buffer used to transport the bytes from one stream to another
+//  byte[] buf = new byte[blockSize];       //input buffer
+//  byte[] obuf = new byte[512];            //output buffer
+//
+//  // The key
+//  byte[] key = null;
+//  // The initialization vector needed by the CBC mode
+//  byte[] IV = null;
+//  
+//	public static String decrypt(String contents) {
+//		InputStream is = new ByteArrayInputStream(contents.getBytes());
+//		OutputStream os = new ByteArrayOutputStream();
+//		byte[] key = getKey().getPublic().getEncoded();
+//		byte[] actualkey = new byte[32];
+//		System.arraycopy(key, 0, actualkey, 0, 32);
+//		BouncyCastleProvider_AES_CBC aes = new BouncyCastleProvider_AES_CBC(actualkey, new byte[BouncyCastleProvider_AES_CBC.blockSize]);
+//		try {
+//			aes.InitCiphers();
+//			aes.CBCDecrypt(is, os);
+//		} catch (Exception e) {
+//			logger.error("Error in decryption. ", e);
+//			e.printStackTrace();
+//		}
+//		String result = os.toString();
+//		return result;
+//		
+////		String decrypted = null;
+////		try {
+////			Base64Encoder enc = new Base64Encoder();
+////			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+////			cipher.init(Cipher.DECRYPT_MODE, getKey().getPrivate());
+////			decrypted = cipher.dofi
+////		} catch (NoSuchAlgorithmException e) {
+////			logger.error("Couldn't decrypt contents", e);
+////		} catch (NoSuchPaddingException e) {
+////			logger.error("Couldn't decrypt contents", e);
+////		} catch (InvalidKeyException e) {
+////			logger.error("Couldn't decrypt contents", e);
+////		}//		String decrypted = null;
+////		try {
+////		       SecretKey keyValue = new SecretKeySpec(key,"AES");
+////	       //3. create the IV
+////	       AlgorithmParameterSpec IVspec = new IvParameterSpec(IV);
+////	       //4. init the cipher
+////	       encryptCipher.init(Cipher.ENCRYPT_MODE, keyValue, IVspec);
+////	 
+////	       //1 create the cipher
+////	       decryptCipher =
+////	               Cipher.getInstance("AES/CBC/PKCS5Padding");
+////	       //2. the key is already created
+////	       //3. the IV is already created
+////	       //4. init the cipher
+////	       decryptCipher.init(Cipher.DECRYPT_MODE, keyValue, IVspec);
+////	       
+//////			cipher.init(Cipher.DECRYPT_MODE, getKey().getPrivate());
+//////			decrypted = cipher.dofi
+////		} catch (NoSuchAlgorithmException e) {
+////			logger.error("Couldn't decrypt contents", e);
+////		} catch (NoSuchPaddingException e) {
+////			logger.error("Couldn't decrypt contents", e);
+////		} catch (InvalidKeyException e) {
+////			logger.error("Couldn't decrypt contents", e);
+////		} catch (InvalidAlgorithmParameterException e) {
+////			// TODO Auto-generated catch block
+////			e.printStackTrace();
+////		}
+//	}
 }

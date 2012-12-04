@@ -5,6 +5,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.commands.Command;
@@ -44,7 +46,12 @@ public class XMPCommandRunner extends Thread {
 	public void run() {
 		try {
 			while(true) {
-				consume(queue.take());
+				long before = System.currentTimeMillis();
+				Command taken = queue.take();
+				consume(taken);
+				long after = System.currentTimeMillis();
+				long diff = after - before;
+				logger.info(taken.toString() + " took " + diff + " millis.");
 			}
 		} catch (InterruptedException e) {
 			logger.error("Command runner TAKE interrupted: ", e);
@@ -53,6 +60,7 @@ public class XMPCommandRunner extends Thread {
 
 	private void consume(Command take) {
 		try {
+			logger.info("Running command: [Q/P]["+queue.size()+"/"+take.getPriority().ordinal()+"]: " + take.toString());
 			take.execute();
 		} catch (JSONException e) {
 			logger.error("Error in command execution: ", e);
@@ -63,6 +71,10 @@ public class XMPCommandRunner extends Thread {
 		} catch (Exception e) {
 			logger.error("Error in command execution: ", e);
 		}
+	}
+
+	public static int getQueueSize() {
+		return queue.size();
 	}
 	
 }

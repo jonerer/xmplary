@@ -17,5 +17,16 @@
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-debug-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-ext-debug-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="lib/vt-crypt-2.1.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/xmpcommon/lib/vt-crypt-2.1.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/joda-time-2.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/xmpcommon/lib/joda-time-2.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
