@@ -54,7 +54,7 @@ public abstract class AbstractMessageReceiverStrategy implements
 					Class<? extends Command> c;
 					c = handlerClassesUnsafe.get(m.getType());
 
-					if (m.isVerified() && handlerClasses.containsKey(m.getType())) {
+					if ((!m.shouldVerify() || m.isVerified()) && handlerClasses.containsKey(m.getType())) {
 						c = handlerClasses.get(m.getType());
 					}
 					if (c != null) {

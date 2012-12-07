@@ -22,6 +22,9 @@ public class SwitchboardReceiverStrategy extends
 
 		handlerClasses.put(MessageType.DumpRequest, SwitchboardCommand.class);
 		handlerClasses.put(MessageType.DumpResponse, SwitchboardCommand.class);
+
+		handlerClasses.put(MessageType.SetWelderConfigVar, SwitchboardCommand.class);
+		handlerClasses.put(MessageType.GetWelderConfig, SwitchboardCommand.class);
 	}
 
 	@Override

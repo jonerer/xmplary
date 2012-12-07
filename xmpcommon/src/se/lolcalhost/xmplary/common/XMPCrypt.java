@@ -39,14 +39,24 @@ import edu.vt.middleware.crypt.symmetric.AES;
 import edu.vt.middleware.crypt.symmetric.SymmetricAlgorithm;
 import edu.vt.middleware.crypt.util.Base64Converter;
 
+/**
+ * TODO: validate cert chain with http://java2s.com/Open-Source/Java/Security/Bouncy-Castle/org/bouncycastle/jce/provider/test/CertPathValidatorTest.java.htm
+ * and/or http://java2s.com/Open-Source/Java/Security/Bouncy-Castle/org/bouncycastle/jce/provider/test/CertPathBuilderTest.java.htm
+ * http://www.nakov.com/blog/2009/12/01/x509-certificate-validation-in-java-build-and-verify-chain-and-verify-clr-with-bouncy-castle/
+ * 
+ * @author sx00042
+ *
+ */
 public class XMPCrypt {
 	protected static Logger logger = Logger.getLogger(XMPCrypt.class);
 
-	private static List<X509CertificateObject> trusted;
+	
+	private static List<X509CertificateObject> trustAnchors;
+	private static List<X509CertificateObject> intermediates;
 
 	public static List<X509CertificateObject> getTrustedCerts() {
-		if (trusted == null) {
-			trusted = new ArrayList<X509CertificateObject>();
+		if (intermediates == null) {
+			intermediates = new ArrayList<X509CertificateObject>();
 			File dir = new File(XMPConfig.getTrustedCertsDir());
 			File[] listFiles = dir.listFiles();
 			for (File file : listFiles) {
@@ -58,7 +68,7 @@ public class XMPCrypt {
 					X509CertificateObject cert = null;
 					if (o instanceof X509CertificateObject) {
 						cert = (X509CertificateObject) o;
-						trusted.add(cert);
+						intermediates.add(cert);
 					}
 					p.close();
 				} catch (FileNotFoundException e) {
@@ -70,7 +80,7 @@ public class XMPCrypt {
 				}
 			}
 		}
-		return trusted;
+		return intermediates;
 	}
 
 	private static X509CertificateObject cert = null;
@@ -202,19 +212,14 @@ public class XMPCrypt {
 		getTrustedCerts();
 	}
 	
-	public static SecretKey decryptKey(String contents) {
+	public static SecretKey decryptKey(String contents) throws CryptException {
 		final AsymmetricAlgorithm alg = new RSA();
 		alg.setKey(getKey().getPrivate());
 		byte[] result = null;
 		SecretKey key = null;
-		try {
-			alg.initDecrypt();
-			result = alg.decrypt(contents, new Base64Converter());
-			key = new SecretKeySpec(result, "AES");
-		} catch (CryptException e) {
-			logger.error("Error in encryption. ", e);
-			e.printStackTrace();
-		}
+		alg.initDecrypt();
+		result = alg.decrypt(contents, new Base64Converter());
+		key = new SecretKeySpec(result, "AES");
 		return key;
 	}
 	

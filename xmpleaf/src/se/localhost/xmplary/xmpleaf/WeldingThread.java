@@ -50,18 +50,17 @@ public class WeldingThread extends Thread {
 			UpdateWelderValues ssv = new UpdateWelderValues(main, this);
 			ssv.schedule();
 			
-//			SendStatus ss = new SendStatus(main, this);
-			if (r.nextFloat() < 0.5) {
+			SendWeldingDatapointsCommand cmd = new SendWeldingDatapointsCommand(main, this);
+			cmd.schedule();
+			
+			
+			if (r.nextFloat() < 0.1) {
+				// send a "test alarm"
 				SendAlarmCommand sac = new SendAlarmCommand(main, null);
 				sac.schedule();
-				// main.pushMessage(" -- ALARM: TEMPERATURE HIGH --");
-			} else {
-				// create a message to send
-				SendWeldingDatapointsCommand cmd = new SendWeldingDatapointsCommand(main, this);
-				cmd.schedule();
 			}
 			try {
-				Thread.sleep((long) (r.nextFloat() * 1000));
+				Thread.sleep((long) (r.nextFloat() * 100000));
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -69,7 +68,7 @@ public class WeldingThread extends Thread {
 			
 			int queuesize = XMPCommandRunner.getQueueSize();
 			if (queuesize > 100) {
-				
+				// send an alarm about the queue
 			}
 			
 		}

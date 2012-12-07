@@ -144,4 +144,11 @@ public class XMPConfig {
 	public static String getKeyfile() {
 		return p.getProperty("keyfile");
 	}
+
+	public static String getWelderConfigFile() {
+		if (p.contains("welderconfig"))
+			return p.getProperty("welderconfig");
+		else
+			return "welderconfig.xml";
+	}
 }

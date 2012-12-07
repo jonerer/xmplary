@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jivesoftware.smack.packet.Message;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import se.localhost.xmplary.xmpback.dump.DatapointDataset;
 import se.localhost.xmplary.xmpback.dump.DatapointGraph;
@@ -36,6 +38,8 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		Help,
 
 		RequestDataPoints, DumpData, ListNodes,
+		
+		GetWelderConfig, SetWelderConfigVar,
 		
 		GetDump
 	}
@@ -189,6 +193,37 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 					XMPMessage.tellOperator("Couldn't save the file to"
 							+ f.getAbsolutePath() + ".");
 				}
+			}
+		});
+		handlers.put(OperatorCommand.GetWelderConfig, new InputCommandStrategy() {
+			@Override
+			public void HandleCommand(Message m) {
+				XMPMessage.tellOperator("Ok let me send request... ");
+				XMPMessage request = new XMPMessage(MessageType.GetWelderConfig);
+				String targetName = m.getBody().split(" ")[1];
+				request.setContents("bvlah");
+				request.setTarget(XMPNode.getByJID(targetName));
+				request.send();
+			}
+		});
+		handlers.put(OperatorCommand.SetWelderConfigVar, new InputCommandStrategy() {
+			@Override
+			public void HandleCommand(Message m) {
+				XMPMessage.tellOperator("Ok let me send request... ");
+				XMPMessage request = new XMPMessage(MessageType.SetWelderConfigVar);
+				String targetName = m.getBody().split(" ")[1];
+				JSONObject json = new JSONObject();
+				String varName = m.getBody().split(" ")[2];
+				String val = m.getBody().split(" ")[3];
+				try {
+					json.put("key", varName);
+					json.put("value", val);
+				} catch (JSONException e) {
+					System.out.println("This will never happen. " + e);
+				}
+				request.setContents(json);
+				request.setTarget(XMPNode.getByJID(targetName));
+				request.send();
 			}
 		});
 		handlers.put(OperatorCommand.GetDump, new InputCommandStrategy() {

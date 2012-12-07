@@ -31,6 +31,7 @@ import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import edu.vt.middleware.crypt.CryptException;
 import edu.vt.middleware.crypt.util.Base64Converter;
 
 @DatabaseTable
@@ -39,6 +40,8 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		Alarm,
 
 		IsRegistered, Register, Unregister, RegistrationRequest,
+		
+		GetWelderConfig, SetWelderConfigVar,
 
 		DebugText, DataPoints, RequestDataPoints,
 		
@@ -533,7 +536,14 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	
 	public boolean decrypt() {
 		if (contents != null) {
-			SecretKey decryptedKey = XMPCrypt.decryptKey(key);
+			SecretKey decryptedKey = null;
+			try {
+				decryptedKey = XMPCrypt.decryptKey(key);
+			} catch (CryptException e) {
+				logger.error("Couldn't decrypt key. ", e);
+				e.printStackTrace();
+				return false;
+			}
 			Base64Converter conv = new Base64Converter();
 			byte[] bytes = conv.toBytes(iv);
 			String newconts = XMPCrypt.decryptMessage(contents, decryptedKey, bytes);
@@ -592,10 +602,17 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return responseToId != 0;
 	}
 
+	/**
+	 * Should I encrypt? if it's from me, and not in a set of unencrypted data types, then yes.
+	 * @return
+	 */
 	public boolean shouldEncrypt() {
 //		if (getTarget().getType() == NodeType.operator) {
 //			return false;
 //		}
+		if (!origin.equals(XMPNode.getSelf())) {
+			return false;
+		}
 		if (type == MessageType.Raw) {
 			return false;
 		}
@@ -605,8 +622,21 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return true;
 	}
 
+	/**
+	 * Should I decrypt? If it's for me, and not a few unencrypted data types, then yes.
+	 * @return
+	 */
 	public boolean shoudDecrypt() {
-		return shouldEncrypt(); // guess they're the same so far.
+		if (!target.equals(XMPNode.getSelf())) {
+			return false;
+		}
+		if (type == MessageType.Raw) {
+			return false;
+		}
+		if (type == MessageType.Register || type == MessageType.RegistrationRequest) {
+			return false;
+		}
+		return true;
 	}
 
 	public boolean shouldVerify() {

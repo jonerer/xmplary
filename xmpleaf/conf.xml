@@ -12,5 +12,5 @@
 <entry key="database">database.db</entry>
 <entry key="certfile">../certs/certs/XMPlary_Leaf_1.crt</entry>
 <entry key="keyfile">../certs/keys/XMPlary_Leaf_1.pem</entry>
-<entry key="debug">true</entry>
+<entry key="welderconfig">wconf.xml</entry>
 </properties>

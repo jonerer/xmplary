@@ -1,6 +1,15 @@
 package se.localhost.xmplary.xmpleaf;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.InvalidPropertiesFormatException;
+import java.util.Properties;
+
+import org.apache.log4j.Logger;
+
 import se.localhost.xmplary.xmpleaf.strategies.LeafGatewayReceiverStrategy;
+import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.strategies.ChatDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.LoggerDispatcherStrategy;
@@ -9,6 +18,7 @@ import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.MUCDispatchStrategy.MUCRoomStyle;
 
 public class LeafMain extends XMPMain {
+	
 	public LeafMain(String config) {
 		super(config);
 

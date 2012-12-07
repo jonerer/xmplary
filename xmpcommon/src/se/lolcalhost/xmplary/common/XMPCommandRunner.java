@@ -5,8 +5,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
 import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.commands.Command;
