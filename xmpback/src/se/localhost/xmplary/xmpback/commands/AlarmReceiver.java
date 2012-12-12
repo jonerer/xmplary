@@ -4,12 +4,11 @@ import java.sql.SQLException;
 
 import org.json.JSONException;
 
+import se.lolcalhost.xmplary.common.Alarm;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.commands.Command;
-import se.lolcalhost.xmplary.common.commands.Command.CommandPriority;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
-import se.lolcalhost.xmplary.common.models.XMPNode;
 
 public class AlarmReceiver extends Command {
 	public AlarmReceiver(XMPMain main, XMPMessage msg) {
@@ -20,8 +19,9 @@ public class AlarmReceiver extends Command {
 	@Override
 	public void execute() throws JSONException, SQLException,
 			AuthorizationFailureException {
-		String format = String.format("ALARM: %s. Origin is %s.",
-				msg.getRawContents(), msg.getOrigin().getName());
+		Alarm alm = (Alarm) msg.getContents();
+		String format = String.format("ALARM: %s. Text: %s. Origin is %s.",
+				alm.getType().name(), alm.getErrorMessage(), msg.getOrigin().getName());
 		logger.info(format);
 		XMPMessage.tellOperator(format);
 		main.dispatchRaw(format);

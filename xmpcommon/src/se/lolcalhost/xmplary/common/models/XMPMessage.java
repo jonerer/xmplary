@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import se.lolcalhost.xmplary.common.Alarm;
 import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
@@ -249,6 +250,10 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 				}
 				r.close();
 				return cert;
+			} else if (type == MessageType.Alarm) {
+				Alarm a = new Alarm();
+				a.readObject(new JSONObject(contents));
+				return a;
 			} else {
 				return contents;
 			}
@@ -283,6 +288,11 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 				wr.writeObject(obj);
 				wr.close();
 				this.contents = sw.toString();
+			} else if (contents instanceof Alarm) {
+				// TODO: should probably check against JSONSerializable instead.
+				JSONObject obj = new JSONObject();
+				((Alarm) contents).writeObject(obj);
+				this.contents = obj.toString();
 			}
 		} catch (JSONException e) {
 			throw new IllegalArgumentException();
@@ -557,12 +567,12 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return false;
 	}
 	
-	public boolean encrypt() {
+	public boolean encrypt(XMPNode next) {
 		if (contents != null) {
 			SecretKey newKey = XMPCrypt.generateKey();
 			byte[] initvector = XMPCrypt.generateIV();
 			String encryptedconts = XMPCrypt.encryptMessage(contents, newKey, initvector);
-			String targetedKey = XMPCrypt.encryptKey(newKey, target);
+			String targetedKey = XMPCrypt.encryptKey(newKey, next);
 			
 			
 			contents = encryptedconts;
@@ -610,9 +620,9 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 //		if (getTarget().getType() == NodeType.operator) {
 //			return false;
 //		}
-		if (!origin.equals(XMPNode.getSelf())) {
-			return false;
-		}
+//		if (!origin.equals(XMPNode.getSelf())) {
+//			return false;
+//		}
 		if (type == MessageType.Raw) {
 			return false;
 		}
@@ -627,9 +637,9 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	 * @return
 	 */
 	public boolean shoudDecrypt() {
-		if (!target.equals(XMPNode.getSelf())) {
-			return false;
-		}
+//		if (!target.equals(XMPNode.getSelf())) {
+//			return false;
+//		}
 		if (type == MessageType.Raw) {
 			return false;
 		}
@@ -646,10 +656,16 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		if (type == MessageType.Register || type == MessageType.RegistrationRequest) {
 			return false;
 		}
+		if (type == MessageType.Raw) {
+			return false;
+		}
 		return true;
 	}
 	
 	public boolean shouldSign() {
+		if (type == MessageType.Raw) {
+			return false;
+		}
 		return origin.equals(XMPNode.getSelf());
 	}
 

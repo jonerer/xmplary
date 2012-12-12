@@ -73,6 +73,7 @@ public class SendDataPoints extends Command {
 					"Sent %d datapoints to %s. %d remaining.",
 					pts.size(), response.getTarget().getName(),
 					unsent.size() - sent));
+			response.save(); // must be saved before creating the DPMs, since it needs an ID.
 			response.send();
 
 			// 1. save in the database that it has been sent to this backend.

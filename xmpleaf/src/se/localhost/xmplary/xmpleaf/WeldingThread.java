@@ -9,7 +9,9 @@ import se.localhost.xmplary.xmpleaf.commands.SendAlarmCommand;
 import se.localhost.xmplary.xmpleaf.commands.SendStatus;
 import se.localhost.xmplary.xmpleaf.commands.SendWeldingDatapointsCommand;
 import se.localhost.xmplary.xmpleaf.commands.UpdateWelderValues;
+import se.lolcalhost.xmplary.common.Alarm;
 import se.lolcalhost.xmplary.common.XMPCommandRunner;
+import se.lolcalhost.xmplary.common.Alarm.AlarmTypes;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
@@ -54,13 +56,16 @@ public class WeldingThread extends Thread {
 			cmd.schedule();
 			
 			
-			if (r.nextFloat() < 0.1) {
+			if (r.nextFloat() < 0.9) {
 				// send a "test alarm"
-				SendAlarmCommand sac = new SendAlarmCommand(main, null);
+				Alarm a = new Alarm();
+				a.setType(AlarmTypes.CHEESEBURGER_DROPPED);
+				a.setErrorMessage("Someone dropped a cheeseburger on the circut board.");
+				SendAlarmCommand sac = new SendAlarmCommand(main, a);
 				sac.schedule();
 			}
 			try {
-				Thread.sleep((long) (r.nextFloat() * 100000));
+				Thread.sleep((long) (r.nextFloat() * 10000));
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

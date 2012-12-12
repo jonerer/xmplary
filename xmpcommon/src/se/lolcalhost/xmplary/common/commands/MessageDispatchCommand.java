@@ -7,7 +7,7 @@ import org.json.JSONException;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
-import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
+import se.lolcalhost.xmplary.common.models.XMPNode;
 
 /**
  * Dispatch a message. This function is available via the XMPMessage.send() comfortability function.
@@ -34,14 +34,15 @@ public class MessageDispatchCommand extends Command {
 			msg.sign();
 		}
 		if (msg.shouldEncrypt()) {
-			if (msg.getTarget().isRegistered() == false) {
-				RequestRegistrationCommand cmd = new RequestRegistrationCommand(main, msg.getTarget());
+			XMPNode nextNode = msg.getNextRoutingNode();
+			if (nextNode.isRegistered() == false) {
+				RequestRegistrationCommand cmd = new RequestRegistrationCommand(main, nextNode);
 				cmd.schedule();
-				this.schedule();
+				this.schedule(); // make sure it's less prioritized than an RR-Command! or infinite loop.
 				msg.save();
 				return;
 			}
-			msg.encrypt();
+			msg.encrypt(nextNode);
 		}
 		msg.setDelivered(true); // TODO: maybe do this later, after getting
 		// an ACK?
