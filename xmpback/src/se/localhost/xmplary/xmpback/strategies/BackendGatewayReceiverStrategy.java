@@ -1,6 +1,7 @@
 package se.localhost.xmplary.xmpback.strategies;
 
 import se.localhost.xmplary.xmpback.commands.AlarmReceiver;
+import se.localhost.xmplary.xmpback.commands.WeldStatusReceiver;
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.commands.IncomingDataPoints;
 import se.lolcalhost.xmplary.common.commands.Register;
@@ -24,6 +25,7 @@ public class BackendGatewayReceiverStrategy extends AbstractMessageReceiverStrat
 	protected void registerHandlers() {
 		handlerClasses.put(MessageType.DataPoints, IncomingDataPoints.class);
 		handlerClasses.put(MessageType.Alarm, AlarmReceiver.class);
+		handlerClasses.put(MessageType.WelderStatus, WeldStatusReceiver.class);
 	}
 
 	@Override

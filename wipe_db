@@ -1,2 +1,2 @@
-rm xmpback/database.db xmpgate/database.db xmpleaf/database.db
+rm xmpback/database.db xmpgate/database.db xmpleaf/database.db xmpleaf/database-35.db
 

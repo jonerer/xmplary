@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.PublicKey;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.lolcalhost.xmplary.common.Alarm;
+import se.lolcalhost.xmplary.common.Status;
+import se.lolcalhost.xmplary.common.XMPConfig;
 import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
@@ -38,7 +41,7 @@ import edu.vt.middleware.crypt.util.Base64Converter;
 @DatabaseTable
 public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	public static enum MessageType {
-		Alarm,
+		Alarm, WelderStatus,
 
 		IsRegistered, Register, Unregister, RegistrationRequest,
 		
@@ -109,6 +112,10 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	public static final String VERIFIED = "verified";
 	@DatabaseField(canBeNull = false, columnName = VERIFIED)
 	private boolean verified;
+	
+	public static final String TIME = "time";
+	@DatabaseField(canBeNull = false, columnName = TIME)
+	private Date time;
 
 	private String key;
 
@@ -124,6 +131,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		from = XMPNode.getSelf(); // default is to send from self.
 		target = XMPNode.getGateway(); // default is to send to gateway.
 		origin = XMPNode.getSelf();
+		time = new Date(); // this'll be overwritten in readObject if it should.
 	}
 
 	public XMPMessage(MessageType mt) {
@@ -254,6 +262,10 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 				Alarm a = new Alarm();
 				a.readObject(new JSONObject(contents));
 				return a;
+			} else if (type == MessageType.WelderStatus) {
+				Status a = new Status();
+				a.readObject(new JSONObject(contents));
+				return a;
 			} else {
 				return contents;
 			}
@@ -292,6 +304,11 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 				// TODO: should probably check against JSONSerializable instead.
 				JSONObject obj = new JSONObject();
 				((Alarm) contents).writeObject(obj);
+				this.contents = obj.toString();
+			} else if (contents instanceof Status) {
+				// TODO: should probably check against JSONSerializable instead.
+				JSONObject obj = new JSONObject();
+				((Status) contents).writeObject(obj);
 				this.contents = obj.toString();
 			}
 		} catch (JSONException e) {
@@ -349,6 +366,8 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 			
 			stream.put("key", key);
 
+			stream.put("time", XMPConfig.jsonDateFormat().format(time));
+
 			if (responseToId != 0) {
 				stream.put("response_to_node", responseToNode.getName());
 			}
@@ -384,6 +403,12 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 			key = stream.getString("key");
 		}
 		signature = stream.getString("signature");
+		
+		try {
+			time = XMPConfig.jsonDateFormat().parse(stream.getString("time"));
+		} catch (ParseException e) {
+			throw new JSONException(e);
+		}
 	}
 
 	public JSONObject asJSONObject() {
@@ -672,5 +697,13 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	@Override
 	public String toString() {
 		return this.getClass().getName() + " of type " + type.name();
+	}
+
+	public Date getTime() {
+		return time;
+	}
+
+	public void setTime(Date time) {
+		this.time = time;
 	}
 }

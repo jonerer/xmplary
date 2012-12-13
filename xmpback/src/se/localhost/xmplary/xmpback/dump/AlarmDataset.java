@@ -3,6 +3,11 @@ package se.localhost.xmplary.xmpback.dump;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * This is unfinished. I'll leave it here, might do it in the future. MIGHT.
+ * @author sx00042
+ *
+ */
 public class AlarmDataset extends GraphDataset {
 
 	public AlarmDataset(Collection<?> items) {

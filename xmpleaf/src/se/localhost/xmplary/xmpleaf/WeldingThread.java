@@ -10,8 +10,9 @@ import se.localhost.xmplary.xmpleaf.commands.SendStatus;
 import se.localhost.xmplary.xmpleaf.commands.SendWeldingDatapointsCommand;
 import se.localhost.xmplary.xmpleaf.commands.UpdateWelderValues;
 import se.lolcalhost.xmplary.common.Alarm;
-import se.lolcalhost.xmplary.common.XMPCommandRunner;
 import se.lolcalhost.xmplary.common.Alarm.AlarmTypes;
+import se.lolcalhost.xmplary.common.Status.WelderStatus;
+import se.lolcalhost.xmplary.common.XMPCommandRunner;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
@@ -21,14 +22,7 @@ public class WeldingThread extends Thread {
 	private HashMap<XMPDataPoint.DataPointField, Double> data = new HashMap<XMPDataPoint.DataPointField, Double>();
 	private DateTime lastStatusChange = new DateTime();
 	private WelderStatus status = WelderStatus.STOPPED;
-	
-	public enum WelderStatus {
-		RUNNING,
-		REFUELING,
-		COOLINGDOWN,
-		STOPPED, 
-		AWAIT_REFUEL
-	}
+	private double VoodooSequence;
 	
 	public WeldingThread(LeafMain main) {
 		super("WeldingThread");
@@ -41,12 +35,13 @@ public class WeldingThread extends Thread {
 		data.put(DataPointField.FuelRemaining, 10d);
 		data.put(DataPointField.VoodooMagic, 2d);
 		data.put(DataPointField.Weldspeed, 2d);
-		data.put(DataPointField.Temperature, 2d);
+		data.put(DataPointField.Temperature, UpdateWelderValues.ROOM_TEMPERATURE);
 	}
 
 	@Override
 	public void run() {
 		Random r = new Random();
+		VoodooSequence = r.nextDouble();
 		initWelder();
 		while (true) {
 			UpdateWelderValues ssv = new UpdateWelderValues(main, this);
@@ -56,7 +51,7 @@ public class WeldingThread extends Thread {
 			cmd.schedule();
 			
 			
-			if (r.nextFloat() < 0.9) {
+			if (r.nextFloat() < 0.05) {
 				// send a "test alarm"
 				Alarm a = new Alarm();
 				a.setType(AlarmTypes.CHEESEBURGER_DROPPED);
@@ -73,7 +68,7 @@ public class WeldingThread extends Thread {
 			
 			int queuesize = XMPCommandRunner.getQueueSize();
 			if (queuesize > 100) {
-				// send an alarm about the queue
+				// maybe send alarm here? or will that clog up the queue even more?
 			}
 			
 		}
@@ -94,6 +89,14 @@ public class WeldingThread extends Thread {
 	public void setStatus(WelderStatus status) {
 		lastStatusChange = new DateTime();
 		this.status = status;
+	}
+
+	public double getVoodooSequence() {
+		return VoodooSequence;
+	}
+
+	public void setVoodooSequence(double voodooSequence) {
+		VoodooSequence = voodooSequence;
 	}
 
 }

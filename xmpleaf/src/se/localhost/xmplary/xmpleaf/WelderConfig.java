@@ -33,6 +33,7 @@ public class WelderConfig {
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(weldconf);
+			p = new Properties();
 			p.loadFromXML(fis);
 			fis.close();
 			logger.info("Loaded welder config file.");

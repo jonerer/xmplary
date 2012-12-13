@@ -19,6 +19,11 @@ public class Alarm implements JSONSerializable {
 	
 	public Alarm() {}
 
+	public Alarm(AlarmTypes type, String errorMessage) {
+		this.type = type;
+		this.errorMessage = errorMessage;
+	}
+	
 	@Override
 	public void readObject(JSONObject stream) throws JSONException {
 		errorMessage = stream.getString("message");

@@ -64,7 +64,7 @@ public class XMPDataPoint implements JSONSerializable {
 
 	
 	public XMPDataPoint() {
-		if (explanations == null) {
+		if (explanations.size() == 0) {
 			initExplanations();
 		}
 		from = XMPNode.getSelf();

@@ -44,8 +44,9 @@ public class XMPCommandRunner extends Thread {
 	public void run() {
 		try {
 			while(true) {
-				long before = System.currentTimeMillis();
 				Command taken = queue.take();
+				logger.info("Running command: [Q/P]["+queue.size()+"/"+taken.getPriority().ordinal()+"]: " + taken.toString());
+				long before = System.currentTimeMillis();
 				consume(taken);
 				long after = System.currentTimeMillis();
 				long diff = after - before;
@@ -58,7 +59,6 @@ public class XMPCommandRunner extends Thread {
 
 	private void consume(Command take) {
 		try {
-			logger.info("Running command: [Q/P]["+queue.size()+"/"+take.getPriority().ordinal()+"]: " + take.toString());
 			take.execute();
 		} catch (JSONException e) {
 			logger.error("Error in command execution: ", e);

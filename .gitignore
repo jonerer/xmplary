@@ -8,7 +8,9 @@
 *.core.prefs
 xmpgate/database.db
 xmpleaf/database.db
+xmpleaf/database-35.db
 xmpback/database.db
+xmpback/screens/
 *.db-journal
 Thumbs.db
 log.log*

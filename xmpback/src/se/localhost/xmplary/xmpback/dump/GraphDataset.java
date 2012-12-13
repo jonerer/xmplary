@@ -13,10 +13,6 @@ public abstract class GraphDataset implements Iterable {
 		this.items = items;
 	}
 	
-//	public void addOriginNode(XMPNode node) {
-//		originNode.add(node);
-//	}
-
 	public XMPNode getOriginNode() {
 		return originNode;
 	}

@@ -1,16 +1,18 @@
 package se.localhost.xmplary.xmpleaf.commands;
 
-import java.lang.Thread.State;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.joda.time.DateTime;
 import org.json.JSONException;
 
 import se.localhost.xmplary.xmpleaf.LeafMain;
 import se.localhost.xmplary.xmpleaf.WeldingThread;
-import se.localhost.xmplary.xmpleaf.WeldingThread.WelderStatus;
-import se.lolcalhost.xmplary.common.XMPMain;
+import se.lolcalhost.xmplary.common.Alarm;
+import se.lolcalhost.xmplary.common.Alarm.AlarmTypes;
+import se.lolcalhost.xmplary.common.Status.WelderStatus;
 import se.lolcalhost.xmplary.common.commands.Command;
 import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
@@ -18,17 +20,19 @@ import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 public class UpdateWelderValues extends Command {
 	private static final double WELDSPEED = 4;
 	private static final double FUEL_REFILL_DRAIN = -0.1;
-	private static final double FUEL_DRAIN = 0.01;
+	private static final double FUEL_DRAIN = 0.1;
 	private static final int OVERHEAT_THRESHOLD = 100;
 	private static final int COOLDOWN_THRESHOLD = 60;
 	private static final int FUEL_DRAIN_THRESHOLD = 1;
-	private static final int FUEL_FULL_THRESHOLD = 20;
-	private static final double ROOM_TEMPERATURE = 24;
+	private static final int FUEL_FULL_THRESHOLD = 14;
+	public static final double ROOM_TEMPERATURE = 24;
+	private static final double TEMPERATURE_INCREASE = 1;
+	private static final double TEMPERATURE_COOLDOWN_RATE = 3;
 	
 	private WeldingThread weldingThread;
 	private HashMap<DataPointField, Double> data;
 	private WelderStatus state;
-
+	
 	public UpdateWelderValues(LeafMain main, WeldingThread weldingThread) {
 		super(main);
 		this.weldingThread = weldingThread;
@@ -90,27 +94,39 @@ public class UpdateWelderValues extends Command {
 		switch (state) {
 		case STOPPED:
 			weldingThread.setStatus(WelderStatus.RUNNING);
+			new SendStatus(main, WelderStatus.RUNNING, "Changing status.").schedule();
 			break;
 		case COOLINGDOWN:
 			if (data.get(DataPointField.Temperature) < COOLDOWN_THRESHOLD) {
 				weldingThread.setStatus(WelderStatus.RUNNING);
+				new SendStatus(main, WelderStatus.RUNNING, "Done cooling down; running.").schedule();
 			}
 			break;
 		case REFUELING:
 			if (data.get(DataPointField.FuelRemaining) > FUEL_FULL_THRESHOLD) {
 				weldingThread.setStatus(WelderStatus.RUNNING);
+				new SendStatus(main, WelderStatus.RUNNING, "Fuel refilled; running.").schedule();
 			}
 			break;
 		case RUNNING:
 			if (data.get(DataPointField.Temperature) > OVERHEAT_THRESHOLD) {
 				weldingThread.setStatus(WelderStatus.COOLINGDOWN);
+				Alarm a = new Alarm(AlarmTypes.OVERHEAT, "Temperature at " + data.get(DataPointField.Temperature) + ", forcing stop to cool down.");
+				SendAlarmCommand cmd = new SendAlarmCommand(main, a);
+				cmd.schedule();
+				new SendStatus(main, WelderStatus.COOLINGDOWN, "Overheat, stopping.").schedule();
 			} else if (data.get(DataPointField.FuelRemaining) < FUEL_DRAIN_THRESHOLD) {
+				Alarm a = new Alarm(AlarmTypes.FUEL_DRAINED, "Fuel remaining at " + data.get(DataPointField.FuelRemaining) + ", forcing stop, awaiting refuel.");
+				SendAlarmCommand cmd = new SendAlarmCommand(main, a);
+				cmd.schedule();
 				weldingThread.setStatus(WelderStatus.AWAIT_REFUEL);
+				new SendStatus(main, WelderStatus.AWAIT_REFUEL, "Ran out of fuel, stopping.").schedule();
 			}
 			break;
 		case AWAIT_REFUEL:
-			if (r.nextInt(100) < 10) {
+			if (r.nextDouble() < 0.1) {
 				weldingThread.setStatus(WelderStatus.REFUELING);
+				new SendStatus(main, WelderStatus.REFUELING, "Refueling...").schedule();
 			}
 			break;
 		}
@@ -123,12 +139,16 @@ public class UpdateWelderValues extends Command {
 		double weldspeed = data.get(DataPointField.Weldspeed);
 		double cheeseburgers = data.get(DataPointField.Cheeseburgers);
 		double voodoomagic = data.get(DataPointField.VoodooMagic);
-
 		
+		double d = new Date().getTime() / (2*Math.PI * 10000);
+		double d2 = new Date().getTime() * 0.9 / (2*Math.PI * 10000);
+		
+		double sine1 = Math.sin(d + weldingThread.getVoodooSequence() * 2 * Math.PI);
+		voodoomagic = 4 + sine1 * Math.sin(d2);
 		switch (state) {
 		case RUNNING:
 			fueldrain = FUEL_DRAIN;
-			temp = temp + 0.1;
+			temp = temp + TEMPERATURE_INCREASE;
 			weldspeed = WELDSPEED;
 			break;
 		case REFUELING:
@@ -138,11 +158,10 @@ public class UpdateWelderValues extends Command {
 		case STOPPED:
 			fueldrain = 0;
 			weldspeed = 0;
-			temp = Math.max(temp - 0.2, ROOM_TEMPERATURE);
+			temp = Math.max(temp - TEMPERATURE_COOLDOWN_RATE, ROOM_TEMPERATURE);
 			break;
 		}
 		cheeseburgers = 3;
-		voodoomagic = 4;
 		fuelremain = fuelremain - fueldrain;
 		
 		data.put(DataPointField.FuelDrain, fueldrain);

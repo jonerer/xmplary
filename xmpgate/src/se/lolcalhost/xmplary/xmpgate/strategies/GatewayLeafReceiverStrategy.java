@@ -40,6 +40,7 @@ public class GatewayLeafReceiverStrategy extends AbstractMessageReceiverStrategy
 	@Override
 	protected void registerHandlers() {
 		handlerClasses.put(MessageType.Alarm, MulticastToBackends.class);
+		handlerClasses.put(MessageType.WelderStatus, MulticastToBackends.class);
 		handlerClasses.put(MessageType.DataPoints, IncomingDataPoints.class);
 		
 		handlerClasses.put(MessageType.Unregister, Unregister.class);

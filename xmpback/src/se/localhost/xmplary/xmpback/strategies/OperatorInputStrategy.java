@@ -2,7 +2,9 @@ package se.localhost.xmplary.xmpback.strategies;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -10,17 +12,23 @@ import org.jivesoftware.smack.packet.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import se.localhost.xmplary.xmpback.commands.OperatorInputCommand;
 import se.localhost.xmplary.xmpback.dump.DatapointDataset;
 import se.localhost.xmplary.xmpback.dump.DatapointGraph;
+import se.lolcalhost.xmplary.common.Alarm;
+import se.lolcalhost.xmplary.common.Status;
 import se.lolcalhost.xmplary.common.XMPCrypt;
 import se.lolcalhost.xmplary.common.XMPDb;
 import se.lolcalhost.xmplary.common.XMPMain;
+import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 import se.lolcalhost.xmplary.common.models.XMPNode;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 import se.lolcalhost.xmplary.common.strategies.IMessageReceiverStrategy;
+
+import com.j256.ormlite.stmt.Where;
 
 public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	public interface InputCommandStrategy {
@@ -41,7 +49,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		
 		GetWelderConfig, SetWelderConfigVar,
 		
-		GetDump
+		GetDump, GetStatusList, GetAlarmsList
 	}
 
 	public OperatorInputStrategy(XMPMain main) {
@@ -84,7 +92,9 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 			XMPNode n = XMPNode.getByJID(p.getFrom());
 			// String operjid = operator.getJID();
 			if (handlers.get(c) != null && n.getType() == NodeType.operator) {
-				handlers.get(c).HandleCommand(m);
+				OperatorInputCommand cmd = new OperatorInputCommand(main, m, handlers.get(c));
+				cmd.schedule();
+//				handlers.get(c).HandleCommand(m);
 			} else {
 				XMPMessage.tellOperator("Unknown command, or you're not operator.");
 			}
@@ -171,7 +181,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 				}
 				XMPMessage.tellOperator("Dumping datapoints from "
 						+ nodes.size() + " node(s).");
-				DatapointGraph g = new DatapointGraph("Datapoints", field);
+				DatapointGraph g = new DatapointGraph(XMPDataPoint.explanations.get(field), field);
 				for (XMPNode xmpNode : nodes) {
 					DatapointDataset ds = new DatapointDataset(xmpNode
 							.getDatapoints());
@@ -184,14 +194,103 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 					System.out.println("is problem: ");
 				}
 				g.show();
-				File f = new File("bleulf.png");
+				// does the folder "screens" exist?
+				File s = new File("screens");
+				if (!s.exists()) {
+					if (!s.mkdir()) {
+						XMPMessage.tellOperator("Couldn't create screens dir.");
+					}
+				} else if (s.isFile()) {
+					XMPMessage.tellOperator("'screens' already exists but is a file. please move it to save screenshots.");
+				}
+				s = new File("screens"); // dunno if this is rly neccesary.
+				if (s.exists()) {
+					File f = new File("screens/" + new Date().toGMTString().replace(":", ".")+".png");
+					try {
+						g.save(f);
+						XMPMessage.tellOperator("Saved file as "
+								+ f.getAbsolutePath() + ".");
+					} catch (IOException e) {
+						XMPMessage.tellOperator("Couldn't save the file to"
+								+ f.getAbsolutePath() + ".");
+					}
+				}
+			}
+		});
+		handlers.put(OperatorCommand.GetStatusList, new InputCommandStrategy() {
+			
+			@Override
+			public void HandleCommand(Message m) {
+				String[] split = m.getBody().split(" ");
+				List<XMPNode> nodes = new ArrayList<XMPNode>();
+				if (split.length > 1) {
+					XMPNode byJID = XMPNode.getByJID(split[1]);
+					if (byJID != null) {
+						nodes.add(byJID);
+					} else {
+						XMPMessage
+						.tellOperator("\""+split[1]+"\" Is not a valid (leaf) node. See valid with !ListNodes. Fill list with RequestDataPoints.");
+						return;
+					}
+				}
+				if (nodes.size() == 0) {
+					nodes = XMPNode.getLeaves();
+				}
+				XMPMessage.tellOperator("Dumping status updates from "
+						+ nodes.size() + " node(s).");
+				
 				try {
-					g.save(f);
-					XMPMessage.tellOperator("Saved file as "
-							+ f.getAbsolutePath() + ".");
-				} catch (IOException e) {
-					XMPMessage.tellOperator("Couldn't save the file to"
-							+ f.getAbsolutePath() + ".");
+					Where<XMPMessage, String> eq = XMPDb.Messages.queryBuilder().where().eq(XMPMessage.TYPE, MessageType.WelderStatus).and();
+					eq = eq.in(XMPMessage.ORIGIN, nodes);
+					for (XMPMessage mess : eq.query()) {
+						Status s = (Status) mess.getContents();
+						XMPDb.Nodes.refresh(mess.getOrigin());
+						XMPMessage.tellOperator(mess.getTime().toLocaleString() + " Status change: " + mess.getOrigin().getName() + ":" + s.getStatus().name() + ": " + s.getStatusMessage());
+					}
+				} catch (SQLException e) {
+					XMPMessage.tellOperator("Problem in lookup: " + e);
+				}
+				catch (JSONException e) {
+					XMPMessage.tellOperator("Problem in lookup: " + e);
+				}
+			}
+		});
+		handlers.put(OperatorCommand.GetAlarmsList, new InputCommandStrategy() {
+			
+			@Override
+			public void HandleCommand(Message m) {
+				XMPMessage.tellOperator("Ok...");
+				String[] split = m.getBody().split(" ");
+				List<XMPNode> nodes = new ArrayList<XMPNode>();
+				if (split.length > 1) {
+					XMPNode byJID = XMPNode.getByJID(split[1]);
+					if (byJID != null) {
+						nodes.add(byJID);
+					} else {
+						XMPMessage
+						.tellOperator("\""+split[1]+"\" Is not a valid (leaf) node. See valid with !ListNodes. Fill list with RequestDataPoints.");
+						return;
+					}
+				}
+				if (nodes.size() == 0) {
+					nodes = XMPNode.getLeaves();
+				}
+				XMPMessage.tellOperator("Dumping alarms from "
+						+ nodes.size() + " node(s).");
+				
+				try {
+					Where<XMPMessage, String> eq = XMPDb.Messages.queryBuilder().where().eq(XMPMessage.TYPE, MessageType.Alarm).and();
+					eq = eq.in(XMPMessage.ORIGIN, nodes);
+					for (XMPMessage mess : eq.query()) {
+						Alarm s = (Alarm) mess.getContents();
+						XMPDb.Nodes.refresh(mess.getOrigin());
+						XMPMessage.tellOperator(mess.getTime().toLocaleString() + " Alarm type: " + mess.getOrigin().getName() + ":" + s.getType().name() + ": " + s.getErrorMessage());
+					}
+				} catch (SQLException e) {
+					XMPMessage.tellOperator("Problem in lookup: " + e);
+				}
+				catch (JSONException e) {
+					XMPMessage.tellOperator("Problem in lookup: " + e);
 				}
 			}
 		});

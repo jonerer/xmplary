@@ -18,6 +18,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Message.Type;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.MessageEventManager;
 
 import se.lolcalhost.xmplary.common.commands.RequestRegistrationCommand;
 import se.lolcalhost.xmplary.common.commands.UnpackAndReceiveMessage;
@@ -50,11 +51,24 @@ public class XMPMain {
 		XMPMessage.setMain(this);
 
 		connection = new XMPPConnection(p.getProperty("Domain"));
-		try {
-			connection.connect();
-		} catch (XMPPException e3) {
-			e3.printStackTrace();
+		int tries = 0; 
+		boolean connected = false; 
+		int maxtries = 5;
+		while (tries < maxtries && connected == false) {
+			try {
+				tries++;
+				connection.connect();
+				connected = true;
+			} catch (XMPPException e3) {
+				logger.error("Unable to connect. Try " + tries + ". Max is " + maxtries);
+				e3.printStackTrace();
+			}
 		}
+		if (!connected) {
+			logger.error("FATAL: Unable to create connection after " + maxtries + " tries.");
+			System.exit(1);
+		}
+		logger.info("Connected! After " + tries + " tries.");
 
 		String name = p.getProperty("name");
 		String pass = p.getProperty("pass");
@@ -72,7 +86,7 @@ public class XMPMain {
 		Presence presence = new Presence(Presence.Type.available);
 		presence.setStatus("allmänt cool");
 		connection.sendPacket(presence);
-
+		
 		connection.getChatManager().addChatListener(new ChatManagerListener() {
 			@Override
 			public void chatCreated(Chat chat, boolean createdLocally) {

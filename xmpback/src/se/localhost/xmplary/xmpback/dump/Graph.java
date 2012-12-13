@@ -29,6 +29,11 @@ import org.jfree.ui.RefineryUtilities;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
 
+/**
+ * Basically an implementation of stuff that JFreeGraph uses. Mainly it's from some of their example code.
+ * @author sx00042
+ *
+ */
 public abstract class Graph {
 	private GraphType type;
 	private JFreeChart chart;
@@ -77,7 +82,7 @@ public abstract class Graph {
             }
 
             DateAxis axis = (DateAxis) plot.getDomainAxis();
-            axis.setDateFormatOverride(new SimpleDateFormat("MMM-yyyy"));
+            axis.setDateFormatOverride(new SimpleDateFormat("yy-MM-d k:m"));
             return chart;
 	}
 	
