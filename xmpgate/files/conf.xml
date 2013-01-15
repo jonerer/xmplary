@@ -2,7 +2,15 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>comments?</comment>
-<entry key="name">leaf-5115947184331054403</entry>
-<entry key="Full Name">XMPlary node leaf-5115947184331054403</entry>
-<entry key="room">XMPlary</entry>
+<entry key="Full Name">XMPlary node gateway</entry>
+<entry key="name">gateway</entry>
+<entry key="Domain">se-got-nb-0084</entry>
+<entry key="RoomDomain">conference.se-got-nb-0084</entry>
+<entry key="pass">pass</entry>
+<entry key="type">gateway</entry>
+<entry key="room">yolo</entry>
+<entry key="database">database.db</entry>
+<entry key="certfile">../certs/certs/XMPlary_Gateway_1.crt</entry>
+<entry key="keyfile">../certs/keys/XMPlary_Gateway_1.pem</entry>
+<entry key="debug">true</entry>
 </properties>
