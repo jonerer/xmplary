@@ -40,7 +40,7 @@ public class XMPMain {
 	
 	
 	protected XMPMain(String config) {
-		PropertyConfigurator.configure("../xmpcommon/log5j.properties"); // initialize
+		PropertyConfigurator.configure("../xmpcommon/files/log5j.properties"); // initialize
 																			// log4j
 		Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
@@ -50,7 +50,7 @@ public class XMPMain {
 		XMPCrypt.init();
 		XMPMessage.setMain(this);
 
-		connection = new XMPPConnection(p.getProperty("Domain"));
+		connection = new XMPPConnection(XMPConfig.Domain());
 		int tries = 0; 
 		boolean connected = false; 
 		int maxtries = 5;
@@ -184,10 +184,6 @@ public class XMPMain {
 		this.connection = connection;
 	}
 	
-	protected void attemptRegistration() {
-		// TODO.
-	}
-
 	public void runReceiveHandlers(XMPMessage msg) {
 		if (msg != null) {
 			for (IMessageReceiverStrategy receiver : receivers) {

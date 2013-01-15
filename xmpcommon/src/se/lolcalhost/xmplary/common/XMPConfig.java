@@ -29,10 +29,11 @@ public class XMPConfig {
 	private static File f;
 	static Logger logger = Logger.getLogger(XMPConfig.class);
 	private static String conffile;
+	private static final String files_dir = "files/";
 
 	public static Properties getInstance() {
 		if (p == null) {
-			init("conf.xml");
+			init(files_dir+"conf.xml");
 		}
 		return p;
 	}
@@ -53,7 +54,7 @@ public class XMPConfig {
 	}
 
 	public static String Database() {
-		return p.getProperty("database");
+		return files_dir+p.getProperty("database");
 	}
 
 	public static String Room() {
@@ -73,6 +74,7 @@ public class XMPConfig {
 	}
 
 	static void init(String conffile) {
+		conffile = files_dir + conffile;
 		XMPConfig.conffile = conffile;
 
 		f = new File(conffile);
@@ -147,8 +149,8 @@ public class XMPConfig {
 
 	public static String getWelderConfigFile() {
 		if (p.contains("welderconfig"))
-			return p.getProperty("welderconfig");
+			return p.getProperty(files_dir+"welderconfig");
 		else
-			return "welderconfig.xml";
+			return files_dir+"welderconfig.xml";
 	}
 }
