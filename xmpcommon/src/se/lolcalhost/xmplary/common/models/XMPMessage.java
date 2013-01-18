@@ -227,7 +227,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 			}
 
 		} catch (JSONException e) {
-			logger.warn("Unable to unpack message into XMPMessage. Body: "
+			logger.warn("Unable to unpack message into XMPMessage. JSONException: " + e.toString() + ". \r\nBody: "
 					+ message.getBody());
 			msg = null;
 		}

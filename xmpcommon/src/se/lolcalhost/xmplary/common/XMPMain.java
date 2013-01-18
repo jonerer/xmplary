@@ -40,7 +40,7 @@ public class XMPMain {
 	
 	
 	protected XMPMain(String config) {
-		PropertyConfigurator.configure("../xmpcommon/files/log5j.properties"); // initialize
+		PropertyConfigurator.configure(XMPConfig.getLog4jConfig()); // initialize
 																			// log4j
 		Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
@@ -50,7 +50,7 @@ public class XMPMain {
 		XMPCrypt.init();
 		XMPMessage.setMain(this);
 
-		connection = new XMPPConnection(XMPConfig.Domain());
+		connection = new XMPPConnection(XMPConfig.Address());
 		int tries = 0; 
 		boolean connected = false; 
 		int maxtries = 5;
@@ -108,6 +108,7 @@ public class XMPMain {
 		// start the command runner thread:
 		XMPCommandRunner cmd = new XMPCommandRunner();
 		cmd.start();
+		System.out.print("XMPLary client running! See the log file in files/ for the good stuff.");
 	}
 
 	protected void create(String name, String pass) {

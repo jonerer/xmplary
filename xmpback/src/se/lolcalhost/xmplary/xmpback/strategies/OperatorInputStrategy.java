@@ -331,7 +331,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 				XMPMessage.tellOperator("Ok let me send request... ");
 				XMPMessage request = new XMPMessage(MessageType.DumpRequest);
 				String targetName = m.getBody().split(" ")[1];
-				request.setTarget(XMPNode.getByJID(targetName));
+				request.setTarget(XMPNode.getOrCreateByJID(targetName));
 				request.send();
 			}
 		});

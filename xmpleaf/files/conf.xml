@@ -3,14 +3,15 @@
 <properties>
 <comment>comments?</comment>
 <entry key="Full Name">XMPlary node leaf-20</entry>
-<entry key="name">leaf-20</entry>
-<entry key="Domain">chillpoke</entry>
-<entry key="RoomDomain">conference.chillpoke</entry>
+<entry key="name">leaf-25</entry>
+<entry key="Address">192.168.204.249</entry>
+<entry key="Domain">arm</entry>
+<entry key="RoomDomain">conference.arm</entry>
 <entry key="pass">pass</entry>
 <entry key="type">leaf</entry>
 <entry key="room">yolo</entry>
 <entry key="database">database.db</entry>
-<entry key="certfile">../certs/certs/XMPlary_Leaf_1.crt</entry>
-<entry key="keyfile">../certs/keys/XMPlary_Leaf_1.pem</entry>
+<entry key="certfile">certs/XMPlary_Leaf_1.crt</entry>
+<entry key="keyfile">keys/XMPlary_Leaf_1.pem</entry>
 <entry key="welderconfig">wconf.xml</entry>
 </properties>

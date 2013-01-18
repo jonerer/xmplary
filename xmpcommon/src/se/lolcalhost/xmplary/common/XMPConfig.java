@@ -41,6 +41,10 @@ public class XMPConfig {
 	public static String Domain() {
 		return p.getProperty("Domain");
 	}
+
+	public static String Address() {
+		return p.getProperty("Address");
+	}
 	
 	public static boolean isDebug() {
 		if (!p.containsKey("debug")) {
@@ -134,17 +138,25 @@ public class XMPConfig {
 			return 240;
 		}
 	}
+	
+	public static String getCertBaseDir() {
+		if (new File("certs").exists()) {
+			return "certs/";
+		} else {
+			return "../certs/";
+		}
+	}
 
 	public static String getTrustedCertsDir() {
-		return "../certs/certs/ca";
+		return getCertBaseDir() + "certs/ca";
 	}
 
 	public static String getCertfile() {
-		return p.getProperty("certfile");
+		return getCertBaseDir() + p.getProperty("certfile");
 	}
 
 	public static String getKeyfile() {
-		return p.getProperty("keyfile");
+		return getCertBaseDir() + p.getProperty("keyfile");
 	}
 
 	public static String getWelderConfigFile() {
@@ -152,5 +164,13 @@ public class XMPConfig {
 			return p.getProperty(files_dir+"welderconfig");
 		else
 			return files_dir+"welderconfig.xml";
+	}
+
+	public static String getLog4jConfig() {
+		if (new File("files/log5j.properties").exists()) {
+			return "files/log5j.properties";
+		} else {
+			return "../xmpcommon/files/log5j.properties";
+		}
 	}
 }

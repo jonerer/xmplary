@@ -153,6 +153,9 @@ public class UpdateWelderValues extends Command {
 			break;
 		case REFUELING:
 			fueldrain = FUEL_REFILL_DRAIN;
+			weldspeed = 0;
+			temp = Math.max(temp - TEMPERATURE_COOLDOWN_RATE, ROOM_TEMPERATURE);
+			break;
 		case COOLINGDOWN:
 		case AWAIT_REFUEL:
 		case STOPPED:

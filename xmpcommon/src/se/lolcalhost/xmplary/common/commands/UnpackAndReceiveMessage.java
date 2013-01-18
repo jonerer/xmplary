@@ -42,7 +42,7 @@ public class UnpackAndReceiveMessage extends Command {
 			if (msg.shouldVerify()) {
 				msg.verify();
 			}
-			logger.info("Message parsed! It's of type " + msg.getType() + ". Verified: " + (msg.shouldVerify() ? msg.isVerified() : ""));
+			logger.info("Message parsed! It's of type " + msg.getType() + ". Verified: " + (msg.shouldVerify() ? msg.isVerified() : "(shouldn't be verified)"));
 			msg.save();
 			
 			main.runReceiveHandlers(msg);

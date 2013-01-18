@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project xmpgate with libraries in sub-folder">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary.jar">
+            <manifest>
+                <attribute name="Main-Class" value="se.lolcalhost.xmplary.xmpgate.GatewayMain"/>
+                <attribute name="Class-Path" value=". xmplary_lib/smack.jar xmplary_lib/smackx.jar xmplary_lib/ormlite-core-4.42.jar xmplary_lib/ormlite-jdbc-4.42.jar xmplary_lib/sqlite-jdbc-3.7.2.jar xmplary_lib/JSON-java.jar xmplary_lib/log4j-1.2.17.jar xmplary_lib/bcmail-jdk15on-147.jar xmplary_lib/bcpkix-jdk15on-147.jar xmplary_lib/bcprov-debug-jdk15on-147.jar xmplary_lib/bcprov-ext-debug-jdk15on-147.jar xmplary_lib/vt-crypt-2.1.4.jar xmplary_lib/commons-logging-1.1.1.jar xmplary_lib/joda-time-2.1.jar"/>
+            </manifest>
+            <fileset dir="D:/prog/workspacesemcon/xmplary/xmpgate/bin"/>
+        </jar>
+        <delete dir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <mkdir dir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/smack.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/smackx.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/ormlite-core-4.42.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/ormlite-jdbc-4.42.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/sqlite-jdbc-3.7.2.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/JSON-java.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/log4j-1.2.17.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/bcmail-jdk15on-147.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/bcpkix-jdk15on-147.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/bcprov-debug-jdk15on-147.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/bcprov-ext-debug-jdk15on-147.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/vt-crypt-2.1.4.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/commons-logging-1.1.1.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+        <copy file="D:/prog/workspacesemcon/xmplary/xmpcommon/lib/joda-time-2.1.jar" todir="D:/prog/workspacesemcon/xmplary/xmpgate/build/jar/xmplary_lib"/>
+    </target>
+</project>
