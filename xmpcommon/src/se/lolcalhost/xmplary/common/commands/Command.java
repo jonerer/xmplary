@@ -80,4 +80,12 @@ public abstract class Command implements Comparable<Command> {
 			throw new AuthorizationFailureException();
 		}
 	}
+
+	public boolean hasLogMessage() {
+		return false;
+	}
+
+	public String logMessage() {
+		return null;
+	}
 }

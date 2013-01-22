@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -74,7 +75,8 @@ public class XMPConfig {
 	}
 
 	public static DateFormat jsonDateFormat() {
-		return DateFormat.getDateTimeInstance();
+//		DateFormat.FULL;
+		return DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
 	}
 
 	static void init(String conffile) {

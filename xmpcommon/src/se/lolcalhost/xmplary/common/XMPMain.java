@@ -44,12 +44,19 @@ public class XMPMain {
 																			// log4j
 		Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
+		System.out.print("Initing config...");
 		XMPConfig.init(config);
+		System.out.println("done.");
 		p = XMPConfig.getInstance();
+		System.out.print("Initing db... ");
 		XMPDb.init();
+		System.out.println("done.");
+		System.out.print("Initing crypt...");
 		XMPCrypt.init();
+		System.out.println("done.");
 		XMPMessage.setMain(this);
 
+		System.out.print("Attempting connection...");
 		connection = new XMPPConnection(XMPConfig.Address());
 		int tries = 0; 
 		boolean connected = false; 
@@ -68,8 +75,10 @@ public class XMPMain {
 			logger.error("FATAL: Unable to create connection after " + maxtries + " tries.");
 			System.exit(1);
 		}
+		System.out.println("done.");
 		logger.info("Connected! After " + tries + " tries.");
 
+		System.out.print("Authenticating and sending prescence...");
 		String name = p.getProperty("name");
 		String pass = p.getProperty("pass");
 		login(name, pass);
@@ -105,10 +114,13 @@ public class XMPMain {
 			}
 		});
 
+		System.out.println("done.");
+		System.out.print("Starting command runner...");
 		// start the command runner thread:
 		XMPCommandRunner cmd = new XMPCommandRunner();
 		cmd.start();
-		System.out.print("XMPLary client running! See the log file in files/ for the good stuff.");
+		System.out.println("done.");
+		System.out.print("XMPLary client running as " + p.getProperty("name") + "! See the log file in files/ for the good stuff.");
 	}
 
 	protected void create(String name, String pass) {
@@ -169,7 +181,11 @@ public class XMPMain {
 		// TODO: here is where to check the integrity of stuff, and stuff's
 		// sender
 		for (IMessageReceiverStrategy receiver : receivers) {
-			receiver.PreparseReceiveMessage(message);
+			try {
+				receiver.PreparseReceiveMessage(message);
+			} catch (SQLException e) {
+				logger.error("Exception in preparsereceivemessage: ", e);
+			}
 		}
 
 		XMPMessage msg = null;

@@ -22,6 +22,7 @@ import se.lolcalhost.xmplary.common.exceptions.AuthorizationFailureException;
  */
 public class XMPCommandRunner extends Thread {
 	protected static Logger logger = Logger.getLogger(XMPCommandRunner.class);
+	long commandsRun = 0;
 	
 	public XMPCommandRunner() {
 		super("XMPCommandRunner");
@@ -45,12 +46,18 @@ public class XMPCommandRunner extends Thread {
 		try {
 			while(true) {
 				Command taken = queue.take();
-				logger.info("Running command: [Q/P]["+queue.size()+"/"+taken.getPriority().ordinal()+"]: " + taken.toString());
+				logger.info("Running command: [Q/P]["+queue.size()+"/"+taken.getPriority().ordinal()+"][n."+commandsRun+"]: " + taken.toString());
 				long before = System.currentTimeMillis();
 				consume(taken);
+				commandsRun++;
 				long after = System.currentTimeMillis();
 				long diff = after - before;
-				logger.info(taken.toString() + " took " + diff + " millis.");
+				
+				if (taken.hasLogMessage()) {
+					logger.info(taken.toString() + " took " + diff + " millis. Message: " + taken.logMessage());
+				} else {
+					logger.info(taken.toString() + " took " + diff + " millis.");
+				}
 			}
 		} catch (InterruptedException e) {
 			logger.error("Command runner TAKE interrupted: ", e);

@@ -1,6 +1,8 @@
 package se.lolcalhost.xmplary.common;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
@@ -27,15 +29,24 @@ public class XMPDb {
 
 	
 	public static void init() {
+		System.out.print("1");
 		try {
+			System.setProperty("sqlite.purejava", "true");
 			Class.forName("org.sqlite.JDBC");
+			// (always running in native mode to ensure determinism)
+//			String mode = String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java");
+//			System.out.println("sqlitejdbc: " + mode);
 		} catch (ClassNotFoundException e1) {
 			e1.printStackTrace();
 		}
+		System.out.print("2");
 		String databaseUrl = "jdbc:sqlite:" + XMPConfig.Database();
 //		String databaseUrl = "jdbc:sqlite::memory:";
 		try {
+			System.out.print("3");
+
 			connectionSource = new JdbcConnectionSource(databaseUrl);
+			System.out.print("4");
 
 			// instantiate the DAO to handle Account with String id
 			Nodes = DaoManager.createDao(connectionSource, XMPNode.class);
@@ -43,10 +54,21 @@ public class XMPDb {
 			DataPoints = DaoManager.createDao(connectionSource, XMPDataPoint.class);
 			DataPointMessages = DaoManager.createDao(connectionSource, XMPDataPointMessages.class);
 	
-			TableUtils.createTableIfNotExists(connectionSource, XMPNode.class);
-			TableUtils.createTableIfNotExists(connectionSource, XMPMessage.class);
-			TableUtils.createTableIfNotExists(connectionSource, XMPDataPoint.class);
-			TableUtils.createTableIfNotExists(connectionSource, XMPDataPointMessages.class);
+//			Nodes.isTableExists()
+			System.out.print("5");
+			if (!Nodes.isTableExists()) {
+				TableUtils.createTable(connectionSource, XMPNode.class);
+			}
+			if (!Messages.isTableExists()) {
+				TableUtils.createTable(connectionSource, XMPMessage.class);
+			}
+			if (!DataPoints.isTableExists()) {
+				TableUtils.createTable(connectionSource, XMPDataPoint.class);
+			}
+			if (!DataPointMessages.isTableExists()) {
+				TableUtils.createTable(connectionSource, XMPDataPointMessages.class);
+			}
+			System.out.print("6");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

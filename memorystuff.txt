@@ -1,0 +1,10 @@
+http://www.mysqlperformanceblog.com/2012/03/21/troubleshooting-mysql-memory-usage/
+:
+
+#!/bin/bash
+while true
+do
+  date >> ps.log
+  smem | grep mysqld >> ps.log
+  sleep 60
+done

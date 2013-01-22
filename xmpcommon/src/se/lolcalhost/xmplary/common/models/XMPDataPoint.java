@@ -149,12 +149,8 @@ public class XMPDataPoint implements JSONSerializable {
 		this.originalId = originalId;
 	}
 
-	public void save() {
-		try {
-			XMPDb.DataPoints.createOrUpdate(this);
-		} catch (SQLException e) {
-			logger.error("Couldn't save xmp data point into DB.", e);
-		}
+	public void save() throws SQLException {
+		XMPDb.DataPoints.createOrUpdate(this);
 	}
 
 	public boolean isSentToAll() {

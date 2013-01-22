@@ -5,23 +5,20 @@
     <target name="create_run_jar">
     	<property name="certname" value="XMPlary_Backend_1" />
     	<property name="config" value="conf.xml" />
+    	<property name="buildfolder" value="build/" />
 
-    	<jar destfile="build/jar/xmplary.jar" filesetmanifest="mergewithoutmain">
-            <manifest>
+    	<jar destfile="${buildfolder}jar/xmplary.jar" filesetmanifest="mergewithoutmain">
+    		<manifest>
                 <attribute name="Main-Class" value="se.lolcalhost.xmplary.xmpback.BackMain"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-core-4.42-sources.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/smack.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/smackx-debug.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/smackx.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-core-4.42.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/log4j-1.2.17.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/JSON-java.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-jdbc-4.42.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-core-4.42-javadoc.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/sqlite-jdbc-3.7.2-javadoc.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/sqlite-jdbc-3.7.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcmail-jdk15on-147.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcpkix-jdk15on-147.jar"/>
@@ -33,14 +30,13 @@
             <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/commons-logging-1.1.1.jar"/>
         </jar>
     	
-    	<copy file="../run.sh" todir="build/" />
-    	<copy file="../xmpcommon/files/log5j.properties" todir="build/files/" />
-       	<copy file="../certs/certs/${certname}.crt" todir="build/certs/certs"/>
-       	<copy todir="build/certs/certs/ca">
+    	<copy file="../run.sh" todir="${buildfolder}" />
+    	<copy file="../xmpcommon/files/log5j.properties" todir="${buildfolder}files/" />
+       	<copy file="../certs/certs/${certname}.crt" todir="${buildfolder}certs/certs"/>
+       	<copy todir="${buildfolder}certs/certs/ca">
        		<fileset dir="../certs/certs/ca"/>
    		</copy>
-       	<copy file="../certs/keys/${certname}.pem" todir="build/certs/keys"/>
-    	<copy file="files/${config}" todir="build/files" />
-    	<copy file="files/${config}" todir="build/files" />
+       	<copy file="../certs/keys/${certname}.pem" todir="${buildfolder}certs/keys"/>
+    	<copy file="files/${config}" tofile="${buildfolder}files/conf.xml" />
     </target>
 </project>

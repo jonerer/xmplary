@@ -25,7 +25,6 @@ public class SendDataPoints extends Command {
 	public SendDataPoints(XMPMain m, XMPNode target) {
 		super(m, null);
 		this.target = target;
-
 	}
 
 	public SendDataPoints(XMPMain m, XMPMessage msg) {

@@ -421,12 +421,8 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return id;
 	}
 
-	public void save() {
-		try {
-			XMPDb.Messages.createOrUpdate(this);
-		} catch (SQLException e) {
-			logger.error("Couldn't save xmp message into DB.", e);
-		}
+	public void save() throws SQLException {
+		XMPDb.Messages.createOrUpdate(this);
 	}
 
 	public boolean isMulticast() {
@@ -448,16 +444,11 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		this.origin = origin;
 	}
 
-	public static List<XMPMessage> getAlarms() {
-		try {
-			return XMPDb.Messages.queryForEq(TYPE, MessageType.Alarm);
-		} catch (SQLException e) {
-			logger.error("Unable to get alarm list: " + e);
-		}
-		return new ArrayList<XMPMessage>();
+	public static List<XMPMessage> getAlarms() throws SQLException {
+		return XMPDb.Messages.queryForEq(TYPE, MessageType.Alarm);
 	}
 
-	public void forwardTo(XMPNode destination) {
+	public void forwardTo(XMPNode destination) throws SQLException {
 		XMPMessage msg = new XMPMessage(type);
 		msg.setOrigin(origin);
 		msg.setContents(contents);

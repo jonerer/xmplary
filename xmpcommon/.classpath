@@ -4,7 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/smack.jar" sourcepath="lib/smack_src_3_2_2.zip"/>
 	<classpathentry kind="lib" path="lib/smackx.jar"/>
-	<classpathentry kind="lib" path="lib/ormlite-core-4.42.jar"/>
+	<classpathentry kind="lib" path="lib/ormlite-core-4.42.jar" sourcepath="lib/ormlite-core-4.42-sources.jar"/>
 	<classpathentry kind="lib" path="lib/ormlite-jdbc-4.42.jar"/>
 	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/JSON-java.jar"/>

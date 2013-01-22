@@ -4,9 +4,9 @@
 <comment>comments?</comment>
 <entry key="Full Name">XMPlary node gateway</entry>
 <entry key="name">gateway</entry>
-<entry key="Address">192.168.204.249</entry>
-<entry key="Domain">arm</entry>
-<entry key="RoomDomain">conference.arm</entry>
+<entry key="Address">192.168.204.100</entry>
+<entry key="Domain">chillpoke</entry>
+<entry key="RoomDomain">conference.chillpoke</entry>
 <entry key="pass">pass</entry>
 <entry key="type">gateway</entry>
 <entry key="room">yolo</entry>

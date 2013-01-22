@@ -58,7 +58,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	}
 
 	@Override
-	public void PreparseReceiveMessage(Message p) {
+	public void PreparseReceiveMessage(Message p) throws SQLException {
 		OperatorCommand c = null;
 
 		if (((Message) p).getBody().charAt(0) == '!') {

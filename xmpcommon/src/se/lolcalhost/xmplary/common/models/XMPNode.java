@@ -73,7 +73,7 @@ public class XMPNode implements JSONSerializable {
 
 	public String getJID() {
 		if (type != NodeType.chatroom) {
-			return name + "@" + XMPConfig.Domain() + "/Smack";
+			return name + "@" + XMPConfig.Address() + "/Smack"; // apparently it's not .Domain() here. dunno why. differs on openfire.
 		} else {
 			return name + "@" + XMPConfig.RoomDomain() + "";
 
@@ -180,12 +180,8 @@ public class XMPNode implements JSONSerializable {
 		return room;
 	}
 
-	public void save() {
-		try {
-			XMPDb.Nodes.createOrUpdate(this);
-		} catch (SQLException e) {
-			logger.error("Couldn't save node-connection: ", e);
-		}
+	public void save() throws SQLException {
+		XMPDb.Nodes.createOrUpdate(this);
 	}
 
 	private static void handleException(SQLException e) {

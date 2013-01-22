@@ -16,6 +16,8 @@ import se.lolcalhost.xmplary.common.models.XMPNode;
  * @param xmp
  */
 public class MessageDispatchCommand extends Command {
+	
+	private boolean hasDelivered = false;
 
 	public MessageDispatchCommand(XMPMain main, XMPMessage msg) {
 		super(main, msg);
@@ -44,10 +46,21 @@ public class MessageDispatchCommand extends Command {
 			}
 			msg.encrypt(nextNode);
 		}
+		hasDelivered = true;
 		msg.setDelivered(true); // TODO: maybe do this later, after getting
 		// an ACK?
 		msg.save();
 		main.sendToDispatchers(msg);
+	}
+	
+	@Override
+	public boolean hasLogMessage() {
+		return true;
+	}
+	
+	@Override
+	public String logMessage() {
+		return msg.getType() + " message to " + msg.getTarget().getName() + "(via " + msg.getNextRoutingNode().getJID() + ") delivered: " + (hasDelivered ? "true" : "false");
 	}
 
 }
