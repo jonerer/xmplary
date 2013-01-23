@@ -1,5 +1,6 @@
 package se.lolcalhost.xmplary.common.commands;
 
+import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -22,7 +23,7 @@ public class Register extends Command {
 	}
 
 	@Override
-	public void execute() throws SQLException, JSONException {
+	public void execute() throws SQLException, JSONException, IOException {
 		XMPNode from = msg.getFrom();
 		X509CertificateObject cert = (X509CertificateObject) msg.getContents();
 		XMPNode origin = msg.getOrigin();
@@ -42,7 +43,7 @@ public class Register extends Command {
 				e.printStackTrace();
 			}
 		}
-		if (!isIdentical) {
+		if (origin.isRegistered() == false || !isIdentical) {
 			origin.setCert(cert);
 			
 			if (msg.verify(cert.getPublicKey())) { // TODO: validate cert chain.

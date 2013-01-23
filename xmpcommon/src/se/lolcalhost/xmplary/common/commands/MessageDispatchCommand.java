@@ -1,5 +1,6 @@
 package se.lolcalhost.xmplary.common.commands;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import org.json.JSONException;
@@ -26,7 +27,7 @@ public class MessageDispatchCommand extends Command {
 
 	@Override
 	public void execute() throws JSONException, SQLException,
-			AuthorizationFailureException {
+			AuthorizationFailureException, IOException {
 		// TODO: should stuff be signed here?
 		msg.setDelivered(false);
 		msg.setOutgoing(true);
@@ -60,7 +61,11 @@ public class MessageDispatchCommand extends Command {
 	
 	@Override
 	public String logMessage() {
-		return msg.getType() + " message to " + msg.getTarget().getName() + "(via " + msg.getNextRoutingNode().getJID() + ") delivered: " + (hasDelivered ? "true" : "false");
+		try {
+			return msg.getType() + " message to " + msg.getTarget().getName() + "(via " + msg.getNextRoutingNode().getJID() + ") delivered: " + (hasDelivered ? "true" : "false");
+		} catch (SQLException e) {
+			return "(unable to render message due to " + e.toString() + ")";
+		}
 	}
 
 }

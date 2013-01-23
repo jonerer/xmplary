@@ -12,8 +12,6 @@
 	<classpathentry kind="lib" path="lib/JSON-java.jar"/>
 	<classpathentry kind="lib" path="lib/ormlite-jdbc-4.42.jar"/>
 	<classpathentry kind="lib" path="lib/ormlite-core-4.42-javadoc.jar"/>
-	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.7.2-javadoc.jar"/>
-	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/bcmail-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-debug-jdk15on-147.jar"/>
@@ -22,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/jfreechart-1.0.14.jar"/>
 	<classpathentry kind="lib" path="lib/vt-crypt-2.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/hsqldb.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

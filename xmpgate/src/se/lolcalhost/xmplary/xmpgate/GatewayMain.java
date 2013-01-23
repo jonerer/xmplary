@@ -2,6 +2,7 @@ package se.lolcalhost.xmplary.xmpgate;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.sql.SQLException;
 
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.jivesoftware.smack.XMPPException;
@@ -18,9 +19,13 @@ import se.lolcalhost.xmplary.xmpgate.strategies.GatewayLeafReceiverStrategy;
 import se.lolcalhost.xmplary.xmpgate.strategies.SwitchboardReceiverStrategy;
 
 public class GatewayMain extends XMPMain {
-	public GatewayMain(String conf) {
-		super(conf);
-		
+
+	protected GatewayMain(String config) {
+		super(config);
+	}
+
+	@Override
+	public void init() throws SQLException {
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.ONLY_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
 		dispatchers.add(new LoggerDispatcherStrategy(this));
@@ -32,9 +37,8 @@ public class GatewayMain extends XMPMain {
 
 		PeriodicUpdatesThread put = new PeriodicUpdatesThread(this);
 		put.start();
-		
-		keepRunning();
 	}
+
 
 	/**
 	 * @param args

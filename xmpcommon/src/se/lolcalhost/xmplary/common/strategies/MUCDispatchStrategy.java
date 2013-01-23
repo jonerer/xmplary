@@ -1,5 +1,6 @@
 package se.lolcalhost.xmplary.common.strategies;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +32,7 @@ public class MUCDispatchStrategy extends AbstractMessageDispatchStrategy {
 	private MUCRoomStyle style;
 	private XMPNode room;
 
-	public MUCDispatchStrategy(XMPMain main, MUCRoomStyle style) {
+	public MUCDispatchStrategy(XMPMain main, MUCRoomStyle style) throws SQLException {
 		super(main);
 		this.style = style;
 		logger = Logger.getLogger(this.getClass());
@@ -39,7 +40,7 @@ public class MUCDispatchStrategy extends AbstractMessageDispatchStrategy {
 	}
 
 	@Override
-	public void DispatchMessage(XMPMessage mess) {
+	public void DispatchMessage(XMPMessage mess) throws SQLException {
 		if (!hasJoinedMuc) {
 			joinMuc();
 		}
@@ -56,7 +57,7 @@ public class MUCDispatchStrategy extends AbstractMessageDispatchStrategy {
 	}
 
 	@Override
-	public void DispatchRawMessage(String msg) {
+	public void DispatchRawMessage(String msg) throws SQLException {
 		if (!hasJoinedMuc) {
 			joinMuc();
 		}
@@ -71,7 +72,7 @@ public class MUCDispatchStrategy extends AbstractMessageDispatchStrategy {
 		}
 	};
 
-	private void joinMuc() {
+	private void joinMuc() throws SQLException {
 		final Connection con = main.getConnection();
 		room = XMPNode.getRoom();
 		if (con != null && con.isConnected() && con.isAuthenticated()) {

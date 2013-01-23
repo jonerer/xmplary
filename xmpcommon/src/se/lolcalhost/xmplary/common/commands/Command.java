@@ -1,5 +1,6 @@
 package se.lolcalhost.xmplary.common.commands;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
@@ -22,8 +23,8 @@ public abstract class Command implements Comparable<Command> {
 		LOW,
 		NORMAL,
 		HIGH,
-		INCOMING,
 		SEMIURGENT,
+		INCOMING,
 		URGENT,
 	}
 	
@@ -37,7 +38,7 @@ public abstract class Command implements Comparable<Command> {
 		priority = CommandPriority.NORMAL;
 	}
 	
-	public abstract void execute() throws JSONException, SQLException, AuthorizationFailureException;
+	public abstract void execute() throws JSONException, SQLException, AuthorizationFailureException, IOException;
 	public void schedule() {
 		XMPCommandRunner.scheduleCommand(this);
 	}

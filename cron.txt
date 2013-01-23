@@ -1,0 +1,5 @@
+# put this in your crontab ( /etc/crontab )
+
+@reboot         debian  cd /home/debian/build/ && ./run.sh >> runlog.log
+
+# and smoke it

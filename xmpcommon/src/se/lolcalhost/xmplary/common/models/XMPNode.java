@@ -1,5 +1,8 @@
 package se.lolcalhost.xmplary.common.models;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,6 +10,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.X509CertificateObject;
+import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMWriter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,8 +47,8 @@ public class XMPNode implements JSONSerializable {
 	private NodeType type;
 
 	public static final String CERT = "cert";
-	@DatabaseField(canBeNull = true, columnName = CERT, dataType = DataType.SERIALIZABLE)
-	private X509CertificateObject cert;
+	@DatabaseField(canBeNull = true, columnName = CERT, dataType = DataType.LONG_STRING)
+	private String cert;
 
 	/**
 	 * public key. maybe use a cert library and save certs to disk instead.
@@ -90,68 +95,56 @@ public class XMPNode implements JSONSerializable {
 
 	private static XMPNode gateway = null;
 
-	public static XMPNode getGateway() {
+	public static XMPNode getGateway() throws SQLException {
 		if (gateway == null) {
 			if (XMPConfig.Type() == NodeType.gateway) {
 				gateway = getSelf();
 				return getSelf();
 			}
-			try {
-				List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(TYPE,
-						NodeType.gateway);
-				if (queryForEq.isEmpty()) {
-					logger.info("Self not found in database. Creating...");
-					gateway = new XMPNode();
-					gateway.setType(NodeType.gateway);
-					gateway.setName("gateway");
-				} else {
-					gateway = queryForEq.get(0);
-				}
-				XMPDb.Nodes.createIfNotExists(gateway);
-			} catch (SQLException e) {
-				handleException(e);
+			List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(TYPE,
+					NodeType.gateway);
+			if (queryForEq.isEmpty()) {
+				logger.info("Self not found in database. Creating...");
+				gateway = new XMPNode();
+				gateway.setType(NodeType.gateway);
+				gateway.setName("gateway");
+			} else {
+				gateway = queryForEq.get(0);
 			}
+			XMPDb.Nodes.createIfNotExists(gateway);
 		}
 		return gateway;
 	}
 
 	private static XMPNode self = null;
 
-	public static XMPNode getSelf() {
+	public static XMPNode getSelf() throws SQLException {
 		if (self == null) {
-			try {
-				List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(NAME,
-						XMPConfig.Name());
-				if (queryForEq.isEmpty()) {
-					logger.info("Self not found in database. Creating...");
-					self = new XMPNode();
-					self.setCert(XMPCrypt.getCertificate());
-					self.setName(XMPConfig.Name());
-					self.setType(XMPConfig.Type());
-					self.setRegistered(true);
-				} else {
-					self = queryForEq.get(0);
-				}
-				XMPDb.Nodes.createIfNotExists(self);
-			} catch (SQLException e) {
-				handleException(e);
+			List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(NAME,
+					XMPConfig.Name());
+			if (queryForEq.isEmpty()) {
+				logger.info("Self not found in database. Creating...");
+				self = new XMPNode();
+				self.setCert(XMPCrypt.getCertificate());
+				self.setName(XMPConfig.Name());
+				self.setType(XMPConfig.Type());
+				self.setRegistered(true);
+			} else {
+				self = queryForEq.get(0);
 			}
+			XMPDb.Nodes.createIfNotExists(self);
 		}
 		return self;
 	}
 
 	private static XMPNode operator = null;
 
-	public static XMPNode getOperator() {
+	public static XMPNode getOperator() throws SQLException {
 		if (operator == null) {
-			try {
-				List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(TYPE,
-						NodeType.operator);
-				if (queryForEq.size() != 0) {
-					operator = queryForEq.get(0);
-				}
-			} catch (SQLException e) {
-				handleException(e);
+			List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(TYPE,
+					NodeType.operator);
+			if (queryForEq.size() != 0) {
+				operator = queryForEq.get(0);
 			}
 		}
 		return operator;
@@ -159,22 +152,18 @@ public class XMPNode implements JSONSerializable {
 
 	private static XMPNode room = null;
 
-	public static XMPNode getRoom() {
+	public static XMPNode getRoom() throws SQLException {
 		if (room == null) {
-			try {
-				List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(NAME,
-						XMPConfig.Room());
-				if (queryForEq.isEmpty()) {
-					logger.info("Self not found in database. Creating...");
-					room = new XMPNode();
-					room.setName(XMPConfig.Room());
-					room.setType(NodeType.chatroom);
-					room.save();
-				} else {
-					room = queryForEq.get(0);
-				}
-			} catch (SQLException e) {
-				handleException(e);
+			List<XMPNode> queryForEq = XMPDb.Nodes.queryForEq(NAME,
+					XMPConfig.Room());
+			if (queryForEq.isEmpty()) {
+				logger.info("Self not found in database. Creating...");
+				room = new XMPNode();
+				room.setName(XMPConfig.Room());
+				room.setType(NodeType.chatroom);
+				room.save();
+			} else {
+				room = queryForEq.get(0);
 			}
 		}
 		return room;
@@ -182,10 +171,6 @@ public class XMPNode implements JSONSerializable {
 
 	public void save() throws SQLException {
 		XMPDb.Nodes.createOrUpdate(this);
-	}
-
-	private static void handleException(SQLException e) {
-		logger.error("Database error!", e);
 	}
 
 	public NodeType getType() {
@@ -196,16 +181,12 @@ public class XMPNode implements JSONSerializable {
 		this.type = type;
 	}
 
-	public static XMPNode getByJID(String from) {
+	public static XMPNode getByJID(String from) throws SQLException {
 		// the JID is on format <blah>@<kek>/<resource>
 		// so only grab the first part.
 		List<XMPNode> queryForEq = null;
-		try {
-			queryForEq = XMPDb.Nodes.queryForEq(XMPNode.NAME,
-					from.split("@")[0]);
-		} catch (SQLException e) {
-			handleException(e);
-		}
+		queryForEq = XMPDb.Nodes.queryForEq(XMPNode.NAME,
+				from.split("@")[0]);
 		try {
 			return queryForEq.get(0);
 		} catch (IndexOutOfBoundsException ie) {
@@ -215,7 +196,7 @@ public class XMPNode implements JSONSerializable {
 		}
 	}
 
-	public static XMPNode createByJID(String from) {
+	public static XMPNode createByJID(String from) throws SQLException {
 		XMPNode node = new XMPNode();
 
 		String name = from.split("@")[0];
@@ -225,11 +206,7 @@ public class XMPNode implements JSONSerializable {
 		} catch (IllegalArgumentException e) {
 			node.setType(NodeType.unknown);
 		}
-		try {
-			XMPDb.Nodes.create(node);
-		} catch (SQLException e) {
-			handleException(e);
-		}
+		XMPDb.Nodes.create(node);
 		return node;
 	}
 
@@ -273,7 +250,7 @@ public class XMPNode implements JSONSerializable {
 				&& ((XMPNode) o).getId() == id;
 	}
 
-	public static XMPNode getOrCreateByJID(String string) {
+	public static XMPNode getOrCreateByJID(String string) throws SQLException {
 		XMPNode node = getByJID(string);
 		if (node == null) {
 			node = createByJID(string);
@@ -320,30 +297,41 @@ public class XMPNode implements JSONSerializable {
 		stream.put("name", name);
 	}
 
-	public static List<XMPNode> getLeaves() {
-		try {
-			return XMPDb.Nodes.queryForEq(TYPE, NodeType.leaf);
-		} catch (SQLException e) {
-			handleException(e);
-		}
-		return null;
+	public static List<XMPNode> getLeaves() throws SQLException {
+		return XMPDb.Nodes.queryForEq(TYPE, NodeType.leaf);
 	}
 
-	public Collection<?> getDatapoints() {
-		try {
-			return XMPDb.DataPoints.queryForEq(XMPDataPoint.FROM, this);
-		} catch (SQLException e) {
-			handleException(e);
-		}
-		return null;
+	public Collection<?> getDatapoints() throws SQLException {
+		return XMPDb.DataPoints.queryForEq(XMPDataPoint.FROM, this);
 	}
 
-	public X509CertificateObject getCert() {
+	public X509CertificateObject getCert() throws IOException {
+		if (this.cert == null) {
+			return null;
+		}
+		StringReader fr = new StringReader(this.cert);
+		X509CertificateObject cert = null;
+		PEMReader r = new PEMReader(fr);
+		Object o;
+		o = r.readObject();
+
+		if (o instanceof X509CertificateObject) {
+			cert = (X509CertificateObject) o;
+		}
+		r.close();
 		return cert;
 	}
 
 	public void setCert(X509CertificateObject cert) {
-		this.cert = cert;
+		StringWriter sw = new StringWriter();
+		PEMWriter wr = new PEMWriter(sw);
+		try {
+			wr.writeObject(cert);
+			wr.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.cert = sw.toString();
 	}
 
 }

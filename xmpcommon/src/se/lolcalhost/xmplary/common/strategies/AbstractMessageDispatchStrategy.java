@@ -1,5 +1,7 @@
 package se.lolcalhost.xmplary.common.strategies;
 
+import java.sql.SQLException;
+
 import se.lolcalhost.xmplary.common.XMPMain;
 import se.lolcalhost.xmplary.common.models.XMPMessage;
 
@@ -9,8 +11,8 @@ public abstract class AbstractMessageDispatchStrategy {
 		this.main = main;
 	}
 	
-	public abstract void DispatchMessage(XMPMessage mess);
+	public abstract void DispatchMessage(XMPMessage mess) throws SQLException;
 
-	public void DispatchRawMessage(String msg) {
+	public void DispatchRawMessage(String msg) throws SQLException {
 	}
 }

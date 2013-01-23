@@ -2,6 +2,7 @@ package se.lolcalhost.xmplary.common.strategies;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,7 +47,7 @@ public abstract class AbstractMessageReceiverStrategy implements
 	protected void registerUnsafeHandlers() {
 	}
 
-	public void ReceiveMessage(XMPMessage m) {
+	public void ReceiveMessage(XMPMessage m) throws SQLException {
 		if (nodeTypes.contains(m.getFrom().getType())) {
 			if (handleMessagesNotToSelf || m.getTarget().equals(XMPNode.getSelf())) {
 				// else, pass it on along to the real target.

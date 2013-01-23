@@ -1,5 +1,7 @@
 package se.lolcalhost.xmplary.common.commands;
 
+import java.sql.SQLException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,7 +14,7 @@ public class IsRegistered extends Command {
 	}
 
 	@Override
-	public void execute() throws JSONException {
+	public void execute() throws JSONException, SQLException {
 		XMPMessage response = msg.createResponse();
 		response.setContents(new JSONObject().put("IsRegistered", msg.getFrom().isRegistered()));
 		response.send();

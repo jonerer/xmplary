@@ -263,8 +263,9 @@ public class XMPCrypt {
 	 * .
 	 * @param contents
 	 * @return
+	 * @throws IOException 
 	 */
-	public static String encryptKey(SecretKey newKey, XMPNode target) {
+	public static String encryptKey(SecretKey newKey, XMPNode target) throws IOException {
 //		InputStream is = new ByteArrayInputStream(contents.getBytes());
 //		OutputStream os = new ByteArrayOutputStream();
 //		byte[] key = target.getCert().getPublicKey().getEncoded();

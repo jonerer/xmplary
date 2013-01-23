@@ -1,0 +1,11 @@
+<project name="common_project">
+	    <copy file="../xmpcommon/files/run.sh" todir="${buildfolder}" />
+    	<copy file="../xmpcommon/files/run.bat" todir="${buildfolder}" />
+    	<copy file="../xmpcommon/files/log5j.properties" todir="${buildfolder}files/" />
+       	<copy file="../certs/certs/${certname}.crt" todir="${buildfolder}certs/certs"/>
+       	<copy todir="${buildfolder}certs/certs/ca">
+       		<fileset dir="../certs/certs/ca"/>
+   		</copy>
+       	<copy file="../certs/keys/${certname}.pem" todir="${buildfolder}certs/keys"/>
+    	<copy file="files/${config}" tofile="${buildfolder}files/conf.xml" />
+</project>

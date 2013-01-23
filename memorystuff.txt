@@ -8,3 +8,11 @@ do
   smem | grep mysqld >> ps.log
   sleep 60
 done
+
+
+According to the memory performance, it seems like ormlite is leaking like a bucket.
+Tried changing sqlite to hsqldb. No large difference.
+It could be either smack, ormlite or my application.
+
+http://www.kdgregory.com/index.php?page=java.outOfMemory
+mycket bra om minne i java

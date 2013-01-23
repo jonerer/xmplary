@@ -1,8 +1,6 @@
 package se.lolcalhost.xmplary.common;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
@@ -31,21 +29,24 @@ public class XMPDb {
 	public static void init() {
 		System.out.print("1");
 		try {
-			System.setProperty("sqlite.purejava", "true");
-			Class.forName("org.sqlite.JDBC");
+//			System.setProperty("sqlite.purejava", "true");
+//			Class.forName("org.sqlite.JDBC");
+			Class.forName("org.hsqldb.jdbcDriver");
+			
 			// (always running in native mode to ensure determinism)
-//			String mode = String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java");
+//			String mode = String.format(" running in %s mode ", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java");
 //			System.out.println("sqlitejdbc: " + mode);
 		} catch (ClassNotFoundException e1) {
 			e1.printStackTrace();
 		}
 		System.out.print("2");
-		String databaseUrl = "jdbc:sqlite:" + XMPConfig.Database();
+//		String databaseUrl = "jdbc:sqlite:" + XMPConfig.Database();
 //		String databaseUrl = "jdbc:sqlite::memory:";
 		try {
 			System.out.print("3");
 
-			connectionSource = new JdbcConnectionSource(databaseUrl);
+//			connectionSource = new JdbcConnectionSource(databaseUrl);
+			connectionSource = new JdbcConnectionSource("jdbc:hsqldb:file:"+XMPConfig.Database());
 			System.out.print("4");
 
 			// instantiate the DAO to handle Account with String id

@@ -32,7 +32,7 @@ import com.j256.ormlite.stmt.Where;
 
 public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	public interface InputCommandStrategy {
-		public void HandleCommand(Message m);
+		public void HandleCommand(Message m) throws SQLException;
 	}
 
 	HashMap<OperatorCommand, InputCommandStrategy> handlers = new HashMap<OperatorCommand, InputCommandStrategy>();
@@ -106,7 +106,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	}
 
 	@Override
-	public void ReceiveMessage(XMPMessage msg) {
+	public void ReceiveMessage(XMPMessage msg) throws SQLException {
 		switch (msg.getType()) {
 		case IsRegistered:
 			XMPMessage.tellOperator("Is registered? " + msg.getRawContents());
@@ -123,7 +123,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 	private void addHandlers() {
 		handlers.put(OperatorCommand.Help, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Here is a list of commands: ");
 				for (OperatorCommand node : OperatorCommand.values()) {
 					XMPMessage.tellOperator("!" + node.name());
@@ -132,13 +132,13 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		});
 		handlers.put(OperatorCommand.Hello, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Y halo thar mister " + m.getFrom());
 			}
 		});
 		handlers.put(OperatorCommand.ListNodes, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				for (XMPNode node : XMPDb.Nodes) {
 					XMPMessage.tellOperator("Node: " + node.getName()
 							+ " (type: " + node.getType().name() + ")");
@@ -147,7 +147,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		});
 		handlers.put(OperatorCommand.DumpData, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				String[] split = m.getBody().split(" ");
 				List<XMPNode> nodes = new ArrayList<XMPNode>();
 				DataPointField field = null;
@@ -220,7 +220,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		handlers.put(OperatorCommand.GetStatusList, new InputCommandStrategy() {
 			
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				String[] split = m.getBody().split(" ");
 				List<XMPNode> nodes = new ArrayList<XMPNode>();
 				if (split.length > 1) {
@@ -258,7 +258,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		handlers.put(OperatorCommand.GetAlarmsList, new InputCommandStrategy() {
 			
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Ok...");
 				String[] split = m.getBody().split(" ");
 				List<XMPNode> nodes = new ArrayList<XMPNode>();
@@ -296,7 +296,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		});
 		handlers.put(OperatorCommand.GetWelderConfig, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Ok let me send request... ");
 				XMPMessage request = new XMPMessage(MessageType.GetWelderConfig);
 				String targetName = m.getBody().split(" ")[1];
@@ -307,7 +307,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		});
 		handlers.put(OperatorCommand.SetWelderConfigVar, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Ok let me send request... ");
 				XMPMessage request = new XMPMessage(MessageType.SetWelderConfigVar);
 				String targetName = m.getBody().split(" ")[1];
@@ -327,7 +327,7 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		});
 		handlers.put(OperatorCommand.GetDump, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Ok let me send request... ");
 				XMPMessage request = new XMPMessage(MessageType.DumpRequest);
 				String targetName = m.getBody().split(" ")[1];
@@ -337,14 +337,14 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		});
 		handlers.put(OperatorCommand.IsRegistered, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Ok let me find out... ");
 				new XMPMessage(MessageType.IsRegistered).send();
 			}
 		});
 		handlers.put(OperatorCommand.Register, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("I'm on it... ");
 				XMPMessage xmpMessage = new XMPMessage(MessageType.Register);
 				xmpMessage.setContents(XMPCrypt.getCertificate());
@@ -354,21 +354,21 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 		handlers.put(OperatorCommand.RequestDataPoints,
 				new InputCommandStrategy() {
 					@Override
-					public void HandleCommand(Message m) {
+					public void HandleCommand(Message m) throws SQLException {
 						XMPMessage.tellOperator("I'm on it... ");
 						new XMPMessage(MessageType.RequestDataPoints).send();
 					}
 				});
 		handlers.put(OperatorCommand.Unregister, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("I'm on it... ");
 				new XMPMessage(MessageType.Unregister).send();
 			}
 		});
 		handlers.put(OperatorCommand.Echo, new InputCommandStrategy() {
 			@Override
-			public void HandleCommand(Message m) {
+			public void HandleCommand(Message m) throws SQLException {
 				XMPMessage.tellOperator("Echo: " + m.getBody());
 			}
 		});

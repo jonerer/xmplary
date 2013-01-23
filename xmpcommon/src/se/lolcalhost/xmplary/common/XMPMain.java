@@ -28,7 +28,7 @@ import se.lolcalhost.xmplary.common.models.XMPMessage.MessageType;
 import se.lolcalhost.xmplary.common.strategies.AbstractMessageDispatchStrategy;
 import se.lolcalhost.xmplary.common.strategies.IMessageReceiverStrategy;
 
-public class XMPMain {
+public abstract class XMPMain {
 	protected static Logger logger = Logger.getLogger(XMPMain.class);
 	protected Properties p;
 	private Connection connection;
@@ -37,7 +37,7 @@ public class XMPMain {
 	protected ArrayList<AbstractMessageDispatchStrategy> dispatchers = new ArrayList<AbstractMessageDispatchStrategy>();
 	protected ArrayList<IMessageReceiverStrategy> receivers = new ArrayList<IMessageReceiverStrategy>();
 
-	
+	public abstract void init() throws SQLException;
 	
 	protected XMPMain(String config) {
 		PropertyConfigurator.configure(XMPConfig.getLog4jConfig()); // initialize
@@ -67,12 +67,12 @@ public class XMPMain {
 				connection.connect();
 				connected = true;
 			} catch (XMPPException e3) {
-				logger.error("Unable to connect. Try " + tries + ". Max is " + maxtries);
-				e3.printStackTrace();
+				logger.error("Unable to connect. Try " + tries + ". Max is " + maxtries + ". Server address is " + XMPConfig.Address());
+//				e3.printStackTrace();
 			}
 		}
 		if (!connected) {
-			logger.error("FATAL: Unable to create connection after " + maxtries + " tries.");
+			logger.fatal("FATAL: Unable to create connection after " + maxtries + " tries.");
 			System.exit(1);
 		}
 		System.out.println("done.");
@@ -120,7 +120,16 @@ public class XMPMain {
 		XMPCommandRunner cmd = new XMPCommandRunner();
 		cmd.start();
 		System.out.println("done.");
-		System.out.print("XMPLary client running as " + p.getProperty("name") + "! See the log file in files/ for the good stuff.");
+		System.out.print("Initting userspace code...");
+		try {
+			this.init();
+		} catch (SQLException e) {
+			logger.error("Couldn't init userspace code.", e);
+		}
+		System.out.println("done.");
+		System.out.println("XMPLary client running as " + p.getProperty("name") + "! See the log file in files/ for the good stuff.");
+		System.out.println("Starting foreverloop.");
+		keepRunning();
 	}
 
 	protected void create(String name, String pass) {
@@ -164,7 +173,7 @@ public class XMPMain {
 
 
 
-	public void dispatchRaw(String xmp) {
+	public void dispatchRaw(String xmp) throws SQLException {
 		// TODO: here is where to sign stuff.
 		for (AbstractMessageDispatchStrategy dispatcher : dispatchers) {
 			dispatcher.DispatchRawMessage(xmp);
@@ -201,7 +210,7 @@ public class XMPMain {
 		this.connection = connection;
 	}
 	
-	public void runReceiveHandlers(XMPMessage msg) {
+	public void runReceiveHandlers(XMPMessage msg) throws SQLException {
 		if (msg != null) {
 			for (IMessageReceiverStrategy receiver : receivers) {
 				receiver.ReceiveMessage(msg);
@@ -212,8 +221,9 @@ public class XMPMain {
 	/**
 	 * Don't use this function directly. instead, create and schedule a MessageDispatchCommand.
 	 * @param msg
+	 * @throws SQLException 
 	 */
-	public void sendToDispatchers(XMPMessage msg) {
+	public void sendToDispatchers(XMPMessage msg) throws SQLException {
 		for (AbstractMessageDispatchStrategy dispatcher : dispatchers) {
 			dispatcher.DispatchMessage(msg);
 		}

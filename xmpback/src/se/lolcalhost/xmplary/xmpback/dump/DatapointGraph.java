@@ -6,6 +6,7 @@ import java.util.List;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
@@ -29,7 +30,7 @@ public class DatapointGraph extends Graph {
 	}
 	
 	@Override
-	protected TimeSeriesCollection populate() {
+	protected TimeSeriesCollection populate() throws JSONException {
 		TimeSeriesCollection set = new TimeSeriesCollection();
 		for (DatapointDataset dset : datasets) {
 			TimeSeries s1 = new TimeSeries(dset.getOriginNode().getName());

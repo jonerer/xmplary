@@ -8,6 +8,6 @@ import se.lolcalhost.xmplary.common.models.XMPMessage;
 
 public interface IMessageReceiverStrategy {
 	public void PreparseReceiveMessage(Message m) throws SQLException;
-	public void ReceiveMessage(XMPMessage m);
+	public void ReceiveMessage(XMPMessage m) throws SQLException;
 	
 }

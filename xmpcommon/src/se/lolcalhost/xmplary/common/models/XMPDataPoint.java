@@ -37,8 +37,9 @@ public class XMPDataPoint implements JSONSerializable {
 	 * A JSON field of the contents of the message.
 	 */
 	public static final String CONTENTS = "contents";
-	@DatabaseField(canBeNull = false, columnName = CONTENTS, dataType = DataType.SERIALIZABLE)
-	private HashMap<DataPointField, Double> contents = new HashMap<XMPDataPoint.DataPointField, Double>();
+	@DatabaseField(canBeNull = false, columnName = CONTENTS, dataType = DataType.LONG_STRING)
+	private String contents;
+//	private HashMap<DataPointField, Double> contents = new HashMap<XMPDataPoint.DataPointField, Double>();
 
 	public static final String ORIGINAL_ID = "original_id";
 	@DatabaseField(columnName = ORIGINAL_ID)
@@ -63,7 +64,7 @@ public class XMPDataPoint implements JSONSerializable {
 	private boolean sentToAll;
 
 	
-	public XMPDataPoint() {
+	public XMPDataPoint() throws SQLException {
 		if (explanations.size() == 0) {
 			initExplanations();
 		}
@@ -89,14 +90,6 @@ public class XMPDataPoint implements JSONSerializable {
 		this.from = from;
 	}
 
-	public Map<DataPointField, Double> getContents() {
-		return contents;
-	}
-
-	public void setContents(HashMap<DataPointField, Double> contents) {
-		this.contents = contents;
-	}
-	
 	public void addMessage(XMPMessage message) throws SQLException {
 		XMPDataPointMessages dpm = new XMPDataPointMessages(this, message);
 		XMPDb.DataPointMessages.create(dpm);
@@ -115,20 +108,14 @@ public class XMPDataPoint implements JSONSerializable {
 	}
 
 	public void writeObject(JSONObject jo) throws JSONException {
-		for (DataPointField field : DataPointField.values()) {
-			jo.put(field.name(), this.getContents().get(field));
-		}
+		jo.put("contents", contents);
 		jo.put("from", from.getJID());
 		jo.put("original", getOriginalId());
 		jo.put("time", XMPConfig.jsonDateFormat().format(time));
 	}
 	
-	public void readObject(JSONObject jo) throws JSONException {
-		for (DataPointField field : DataPointField.values()) {
-			if (jo.has(field.name())) {
-				contents.put(field, jo.getDouble(field.name()));
-			}
-		}
+	public void readObject(JSONObject jo) throws JSONException, SQLException {
+		contents = jo.getString("contents");
 		from = XMPNode.getOrCreateByJID(jo.getString("from"));
 		originalId = jo.getInt("original");
 		try {
@@ -167,6 +154,29 @@ public class XMPDataPoint implements JSONSerializable {
 
 	public void setTime(Date time) {
 		this.time = time;
+	}
+
+	public HashMap<DataPointField, Double> getContents() throws JSONException {
+		HashMap<DataPointField, Double> map = new HashMap<XMPDataPoint.DataPointField, Double>();
+		JSONObject jo;
+		if (this.contents == null) {
+			return map;
+		}
+		jo = new JSONObject(contents);
+		for (DataPointField field : DataPointField.values()) {
+			if (jo.has(field.name())) {
+				map.put(field, jo.getDouble(field.name()));
+			}
+		}
+		return map;
+	}
+
+	public void setContents(HashMap<DataPointField, Double> contents) throws JSONException {
+		JSONObject jo = new JSONObject();
+		for (DataPointField field : DataPointField.values()) {
+			jo.put(field.name(), contents.get(field));
+		}
+		this.contents = jo.toString();
 	}
 
 }

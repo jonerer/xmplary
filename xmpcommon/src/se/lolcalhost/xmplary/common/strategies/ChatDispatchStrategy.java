@@ -1,5 +1,6 @@
 package se.lolcalhost.xmplary.common.strategies;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -25,7 +26,7 @@ public class ChatDispatchStrategy extends AbstractMessageDispatchStrategy {
 	}
 
 	@Override
-	public void DispatchMessage(XMPMessage mess) {
+	public void DispatchMessage(XMPMessage mess) throws SQLException {
 		
 		String jid = mess.getNextRoutingNode().getJID();
 		if (!chats.containsKey(jid)) {

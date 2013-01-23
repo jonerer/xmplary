@@ -1,5 +1,6 @@
 package se.lolcalhost.xmplary.xmpgate.commands;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
@@ -19,7 +20,7 @@ public class GatewayRegister extends Register {
 	}
 
 	@Override
-	public void execute() throws SQLException, JSONException {
+	public void execute() throws SQLException, JSONException, IOException {
 		super.execute();
 		XMPNode from = msg.getOrigin();
 		if (from.getType() == NodeType.backend) {

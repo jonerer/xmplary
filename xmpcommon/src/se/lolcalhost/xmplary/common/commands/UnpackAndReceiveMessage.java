@@ -1,5 +1,6 @@
 package se.lolcalhost.xmplary.common.commands;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import org.jivesoftware.smack.packet.Message;
@@ -30,7 +31,7 @@ public class UnpackAndReceiveMessage extends Command {
 
 	@Override
 	public void execute() throws JSONException, SQLException,
-			AuthorizationFailureException {
+			AuthorizationFailureException, IOException {
 		logger.info(String.format("Attempting to parse message %s ...",
 				message.getBody()));
 		msg = XMPMessage.unpack(message);

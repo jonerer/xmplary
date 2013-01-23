@@ -32,6 +32,7 @@ import se.lolcalhost.xmplary.common.commands.MessageDispatchCommand;
 import se.lolcalhost.xmplary.common.interfaces.JSONSerializable;
 import se.lolcalhost.xmplary.common.models.XMPNode.NodeType;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -66,7 +67,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	 * A JSON field of the contents of the message.
 	 */
 	public static final String CONTENTS = "contents";
-	@DatabaseField(columnName = CONTENTS)
+	@DatabaseField(columnName = CONTENTS, dataType = DataType.LONG_STRING)
 	private String contents;
 
 	public static final String TYPE = "type";
@@ -106,7 +107,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	private boolean delivered;
 
 	public static final String SIGNATURE = "signature";
-	@DatabaseField(canBeNull = true, columnName = SIGNATURE)
+	@DatabaseField(canBeNull = true, columnName = SIGNATURE, dataType = DataType.LONG_STRING)
 	private String signature;
 
 	public static final String VERIFIED = "verified";
@@ -127,14 +128,14 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	// ArrayList<HashMap<DataPointField,Float>>();
 	// TODO: is there a change between sent and acknowledged?
 
-	public XMPMessage() {
+	public XMPMessage() throws SQLException {
 		from = XMPNode.getSelf(); // default is to send from self.
 		target = XMPNode.getGateway(); // default is to send to gateway.
 		origin = XMPNode.getSelf();
 		time = new Date(); // this'll be overwritten in readObject if it should.
 	}
 
-	public XMPMessage(MessageType mt) {
+	public XMPMessage(MessageType mt) throws SQLException {
 		this();
 		type = mt;
 	}
@@ -191,7 +192,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	 * @throws JSONException
 	 * @throws SQLException
 	 */
-	public static XMPMessage unpack(Message message) {
+	public static XMPMessage unpack(Message message) throws SQLException {
 		XMPMessage msg = new XMPMessage();
 		try {
 			msg.setOutgoing(false);
@@ -234,7 +235,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return msg;
 	}
 
-	public Object getContents() throws JSONException {
+	public Object getContents() throws JSONException, SQLException {
 		try {
 			if (type == MessageType.DataPoints) {
 				List<XMPDataPoint> res = new ArrayList<XMPDataPoint>();
@@ -318,7 +319,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		}
 	}
 	
-	public XMPMessage createResponse(MessageType type) {
+	public XMPMessage createResponse(MessageType type) throws SQLException {
 		XMPMessage m = new XMPMessage(type);
 		m.setTarget(origin);
 		m.setOutgoing(true);
@@ -332,7 +333,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return m;
 	}
 
-	public XMPMessage createResponse() {
+	public XMPMessage createResponse() throws SQLException {
 		return createResponse(type);
 	}
 
@@ -377,7 +378,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		}
 	}
 
-	public void readObject(JSONObject stream) throws JSONException {
+	public void readObject(JSONObject stream) throws JSONException, SQLException {
 		type = MessageType.valueOf(stream.getString("type"));
 		target = XMPNode.getByJID(stream.getString("target"));
 		originalId = stream.getInt("original");
@@ -471,7 +472,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		XMPMessage.main = main;
 	}
 
-	public static void tellOperator(String text) {
+	public static void tellOperator(String text) throws SQLException {
 		XMPNode operator = XMPNode.getOperator();
 		if (operator != null) {
 			XMPMessage msg = new XMPMessage(MessageType.Raw);
@@ -505,8 +506,9 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 	 * traced to origin node.
 	 * 
 	 * @return
+	 * @throws SQLException 
 	 */
-	public XMPNode getNextRoutingNode() {
+	public XMPNode getNextRoutingNode() throws SQLException {
 		if (XMPNode.getSelf().getType() == NodeType.backend
 				&& target.getType() == NodeType.operator) {
 			return target;
@@ -539,8 +541,9 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 
 	/**
 	 * Try to verify this message with the stored cert.
+	 * @throws IOException 
 	 */
-	public boolean verify() {
+	public boolean verify() throws IOException {
 		if (origin.getCert() == null) {
 			verified = false;
 			return false;
@@ -583,7 +586,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return false;
 	}
 	
-	public boolean encrypt(XMPNode next) {
+	public boolean encrypt(XMPNode next) throws IOException {
 		if (contents != null) {
 			SecretKey newKey = XMPCrypt.generateKey();
 			byte[] initvector = XMPCrypt.generateIV();
@@ -665,7 +668,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return true;
 	}
 
-	public boolean shouldVerify() {
+	public boolean shouldVerify() throws SQLException {
 		if (!target.equals(XMPNode.getSelf())) {
 			return false;
 		}
@@ -678,7 +681,7 @@ public class XMPMessage implements JSONSerializable, abstractXMPMessage {
 		return true;
 	}
 	
-	public boolean shouldSign() {
+	public boolean shouldSign() throws SQLException {
 		if (type == MessageType.Raw) {
 			return false;
 		}

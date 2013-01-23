@@ -13,15 +13,16 @@ public class BackMain extends XMPMain {
 	
 	public BackMain(String conf) {
 		super(conf);
-
+	}
+	
+	@Override
+	public void init() throws java.sql.SQLException {
 		dispatchers.add(new MUCDispatchStrategy(this, MUCRoomStyle.INPUT_OUTPUT));
 		dispatchers.add(new ChatDispatchStrategy(this));
 		dispatchers.add(new LoggerDispatcherStrategy(this));
 		receivers.add(new OperatorInputStrategy(this));
 		receivers.add(new LoggerReceiverStrategy(this));
 		receivers.add(new BackendGatewayReceiverStrategy(this));
-
-		keepRunning();
 	}
 
 	public static void main(String[] args) {

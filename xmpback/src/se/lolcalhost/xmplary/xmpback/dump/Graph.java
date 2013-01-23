@@ -25,6 +25,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RectangleInsets;
 import org.jfree.ui.RefineryUtilities;
+import org.json.JSONException;
 
 import se.lolcalhost.xmplary.common.models.XMPDataPoint;
 import se.lolcalhost.xmplary.common.models.XMPDataPoint.DataPointField;
@@ -86,9 +87,9 @@ public abstract class Graph {
             return chart;
 	}
 	
-	protected abstract TimeSeriesCollection populate();
+	protected abstract TimeSeriesCollection populate() throws JSONException;
 	
-	public void generate() {
+	public void generate() throws JSONException {
 		TimeSeriesCollection set = populate();
 
 		

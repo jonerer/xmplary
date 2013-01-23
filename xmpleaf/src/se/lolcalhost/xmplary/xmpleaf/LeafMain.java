@@ -10,9 +10,12 @@ import se.lolcalhost.xmplary.xmpleaf.strategies.LeafGatewayReceiverStrategy;
 
 public class LeafMain extends XMPMain {
 	
-	public LeafMain(String config) {
+	protected LeafMain(String config) {
 		super(config);
+	}
 
+	@Override
+	public void init() throws java.sql.SQLException {
 		WeldingThread wt = new WeldingThread(this);
 		wt.start();
 
@@ -22,13 +25,9 @@ public class LeafMain extends XMPMain {
 		receivers.add(new LoggerReceiverStrategy(this));
 		receivers.add(new LeafGatewayReceiverStrategy(this));
 		receivers.add(new BackendReceiverStrategy(this));
-		
-		keepRunning();
 	}
 	
 	
-	
-
 	/**
 	 * @param args
 	 */
