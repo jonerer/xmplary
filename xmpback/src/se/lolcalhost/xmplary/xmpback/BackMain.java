@@ -26,7 +26,7 @@ public class BackMain extends XMPMain {
 	}
 
 	public static void main(String[] args) {
-		String conf = "conf.xml";
+		String conf = "conf.properties";
 		if (args.length > 0) {
 			conf = args[0];
 		}

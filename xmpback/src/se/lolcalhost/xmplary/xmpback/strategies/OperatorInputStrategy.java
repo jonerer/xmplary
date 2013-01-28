@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -182,12 +183,15 @@ public class OperatorInputStrategy implements IMessageReceiverStrategy {
 				XMPMessage.tellOperator("Dumping datapoints from "
 						+ nodes.size() + " node(s).");
 				DatapointGraph g = new DatapointGraph(XMPDataPoint.explanations.get(field), field);
+				long numPoints = 0;
 				for (XMPNode xmpNode : nodes) {
-					DatapointDataset ds = new DatapointDataset(xmpNode
-							.getDatapoints());
+					Collection<?> datapoints = xmpNode.getDatapoints();
+					numPoints += datapoints.size();
+					DatapointDataset ds = new DatapointDataset(datapoints);
 					ds.setOriginNode(xmpNode);
 					g.addDataset(ds);
 				}
+				XMPMessage.tellOperator("In total " + numPoints + " datapoints.");
 				try {
 					g.generate();
 				} catch (Exception e) {

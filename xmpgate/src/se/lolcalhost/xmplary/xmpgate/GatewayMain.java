@@ -47,7 +47,7 @@ public class GatewayMain extends XMPMain {
 	 */
 	public static void main(String[] args) throws XMPPException,
 			InterruptedException {
-		String conf = "conf.xml";
+		String conf = "conf.properties";
 		if (args.length > 0) {
 			conf = args[0];
 		}

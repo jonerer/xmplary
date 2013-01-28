@@ -2,42 +2,19 @@
 <project default="create_run_jar" name="Create Runnable Jar for Project xmpleaf">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
-    <target name="create_run_jar">
-    	<property name="certname" value="XMPlary_Leaf_2" />
-    	<property name="config" value="conf-2.xml" />
-    	<property name="buildfolder" value="build-2/build/" />
+	<target name="setup" description="Set up the individual project settings">
+		<property name="certname" value="XMPlary_Leaf_2_Generous" />
+		<property name="buildfolder" value="build-2/build/" />
+		<property name="entry" value="se.lolcalhost.xmplary.xmpleaf.LeafMain" />
 
-    	<jar destfile="${buildfolder}jar/xmplary.jar" filesetmanifest="mergewithoutmain">
-            <manifest>
-                <attribute name="Main-Class" value="se.lolcalhost.xmplary.xmpleaf.LeafMain"/>
-                <attribute name="Class-Path" value="."/>
-            </manifest>
-            <fileset dir="bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/smack.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/smackx.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-core-4.42.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/log4j-1.2.17.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/JSON-java.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/joda-time-2.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-jdbc-4.42.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/hsqldb.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcmail-jdk15on-147.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcpkix-jdk15on-147.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcprov-debug-jdk15on-147.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcprov-ext-debug-jdk15on-147.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/jcommon-1.0.17.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/jfreechart-1.0.14.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/vt-crypt-2.1.4.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/commons-logging-1.1.1.jar"/>
-        </jar>
-    	
-    	<copy file="../run.sh" todir="${buildfolder}" />
-    	<copy file="../xmpcommon/files/log5j.properties" todir="${buildfolder}files/" />
-       	<copy file="../certs/certs/${certname}.crt" todir="${buildfolder}certs/certs"/>
-       	<copy todir="${buildfolder}certs/certs/ca">
-       		<fileset dir="../certs/certs/ca"/>
-   		</copy>
-       	<copy file="../certs/keys/${certname}.pem" todir="${buildfolder}certs/keys"/>
-    	<copy file="files/${config}" tofile="${buildfolder}files/conf.xml" />
+		<property name="name" value="leaf-2" />
+		<property name="type" value="leaf" />
+		<property name="FullName" value="XMPlary node leaf-2" />
+		<property name="database" value="database.db" />
+	</target>
+	
+	<import file="../xmpcommon/files/common_ant.xml" as="nested"/>
+
+    <target name="create_run_jar" depends="nested.common_stuff">
     </target>
 </project>

@@ -1,11 +1,66 @@
-<project name="common_project">
-	    <copy file="../xmpcommon/files/run.sh" todir="${buildfolder}" />
-    	<copy file="../xmpcommon/files/run.bat" todir="${buildfolder}" />
-    	<copy file="../xmpcommon/files/log5j.properties" todir="${buildfolder}files/" />
-       	<copy file="../certs/certs/${certname}.crt" todir="${buildfolder}certs/certs"/>
-       	<copy todir="${buildfolder}certs/certs/ca">
-       		<fileset dir="../certs/certs/ca"/>
-   		</copy>
-       	<copy file="../certs/keys/${certname}.pem" todir="${buildfolder}certs/keys"/>
-    	<copy file="files/${config}" tofile="${buildfolder}files/conf.xml" />
+<project>
+	<target name="setup" />
+	<target name="genconf" description="Generate the conf.properties file" >
+		<property name="Domain" value="arm" />
+		<property name="Address" value="192.168.204.249" />
+		<property name="RoomDomain" value="conference.arm" />
+		<property name="room" value="yolo" />
+		<property name="certfile" value="certs/${certname}.crt" />
+		<property name="keyfile" value="keys/${certname}.pem" />
+		<property name="pass" value="pass" />
+		
+		<mkdir dir="${buildfolder}files/"/>
+		<touch file="${buildfolder}files/conf.properties" />
+		<echoproperties destfile="${buildfolder}files/conf.properties">
+			<propertyset>
+				<propertyref name="room"/>
+				<propertyref name="name"/>
+				<propertyref name="certfile"/>
+				<propertyref name="Domain"/>
+				<propertyref name="Address"/>
+				<propertyref name="RoomDomain"/>
+				<propertyref name="type"/>
+				<propertyref name="keyfile"/>
+				<propertyref name="FullName"/>
+				<propertyref name="database"/>
+				<propertyref name="pass"/>
+			</propertyset>
+		</echoproperties>
+	</target>
+	
+	<target name="common_stuff" depends="setup,genconf" description="Invoke all the common stuff">
+		<copy file="../xmpcommon/files/run.sh" todir="${buildfolder}" />
+		<copy file="../xmpcommon/files/run.bat" todir="${buildfolder}" />
+		<copy file="../xmpcommon/files/log5j.properties" todir="${buildfolder}files/" />
+		<copy file="../certs/certs/${certname}.crt" todir="${buildfolder}certs/certs"/>
+		<copy file="../certs/keys/${certname}.pem" todir="${buildfolder}certs/keys"/>
+		<copy todir="${buildfolder}certs/certs/ca">
+			<fileset dir="../certs/certs/ca"/>
+		</copy>
+		
+		<jar destfile="${buildfolder}jar/xmplary.jar" filesetmanifest="mergewithoutmain" duplicate="preserve">
+            <manifest>
+                <attribute name="Main-Class" value="${entry}"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/smack.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/smackx.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-core-4.42.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/log4j-1.2.17.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/JSON-java.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/joda-time-2.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/ormlite-jdbc-4.42.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/hsqldb.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcmail-jdk15on-147.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcpkix-jdk15on-147.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcprov-debug-jdk15on-147.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/bcprov-ext-debug-jdk15on-147.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/jcommon-1.0.17.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/jfreechart-1.0.14.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/vt-crypt-2.1.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="../xmpcommon/lib/commons-logging-1.1.1.jar"/>
+        </jar>
+		<signjar jar="${buildfolder}jar/xmplary.jar" alias="XMPLary Jar" storepass="starwars" keystore="../xmpcommon/files/keystore.jks"  />
+	</target>
 </project>

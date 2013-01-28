@@ -88,7 +88,7 @@ public abstract class XMPMain {
 			login(name, pass);
 		}
 		if (!connection.isAuthenticated()) {
-			logger.error("Couldn't authenticate. Shutting down.");
+			logger.fatal("Couldn't authenticate. Shutting down.");
 			System.exit(0);
 		}
 

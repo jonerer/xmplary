@@ -34,7 +34,7 @@ public class XMPConfig {
 
 	public static Properties getInstance() {
 		if (p == null) {
-			init(files_dir+"conf.xml");
+			init(files_dir+"conf.properties");
 		}
 		return p;
 	}
@@ -89,7 +89,7 @@ public class XMPConfig {
 			FileInputStream fis = null;
 			try {
 				fis = new FileInputStream(f);
-				p.loadFromXML(fis);
+				p.load(fis);
 			} catch (InvalidPropertiesFormatException e) {
 				logger.error("Config file is malformed.");
 				e.printStackTrace();
@@ -98,39 +98,6 @@ public class XMPConfig {
 				e.printStackTrace();
 			}
 		}
-		boolean hasName = p.getProperty("name") != null
-				&& !p.getProperty("name").equals("player");
-		if (!hasName) {
-			logger.info("No name in config file. Setting one.");
-			FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(f);
-			} catch (FileNotFoundException e) {
-				logger.error("Could not open config file for writing.");
-				e.printStackTrace();
-			}
-
-			SecureRandom sr = new SecureRandom();
-			sr.setSeed(System.nanoTime());
-			long l = -1;
-			while (l < 0)
-				l = sr.nextLong();
-
-			// String s = Long.toString(System.nanoTime());
-			String name = "leaf-" + l;
-			logger.info("New node name: " + name);
-
-			p.setProperty("name", name);
-			p.setProperty("Full Name", "XMPlary node " + name);
-			p.setProperty("room", "XMPlary");
-			try {
-				p.storeToXML(fos, "comments?");
-			} catch (IOException e) {
-				logger.error("Could not save config file");
-				e.printStackTrace();
-			}
-		}
-
 	}
 
 	public static int getMaxDataPointsPerPacket() {

@@ -14,5 +14,7 @@ xmpback/screens/
 *.db-journal
 Thumbs.db
 log.log*
-*/build/
+*/build*/
 */files/database*
+*/files/conf.xml
+*/files/conf-*.xml

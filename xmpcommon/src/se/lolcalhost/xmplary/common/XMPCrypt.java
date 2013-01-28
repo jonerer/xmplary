@@ -210,6 +210,7 @@ public class XMPCrypt {
 	public static void init() {
 		Security.addProvider(new BouncyCastleProvider());
 		getTrustedCerts();
+		getKey();
 	}
 	
 	public static SecretKey decryptKey(String contents) throws CryptException {
