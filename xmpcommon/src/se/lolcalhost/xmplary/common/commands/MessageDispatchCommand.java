@@ -22,7 +22,6 @@ public class MessageDispatchCommand extends Command {
 
 	public MessageDispatchCommand(XMPMain main, XMPMessage msg) {
 		super(main, msg);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

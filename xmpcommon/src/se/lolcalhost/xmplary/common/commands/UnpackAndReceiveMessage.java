@@ -40,13 +40,17 @@ public class UnpackAndReceiveMessage extends Command {
 			if (msg.shoudDecrypt()) {
 				msg.decrypt();
 			}
+			boolean verified = false;
 			if (msg.shouldVerify()) {
-				msg.verify();
+				verified = msg.verify();
 			}
 			logger.info("Message parsed! It's of type " + msg.getType() + ". Verified: " + (msg.shouldVerify() ? msg.isVerified() : "(shouldn't be verified)"));
 			msg.save();
 			
-			main.runReceiveHandlers(msg);
+			// TODO: I just added this line: is it good? TEST IT.
+			if (verified || !msg.shouldVerify()) {
+				main.runReceiveHandlers(msg);
+			}
 			if (msg.shouldVerify() && !msg.isVerified()) {
 				RequestRegistrationCommand rrc = new RequestRegistrationCommand(main, msg);
 				rrc.schedule();
