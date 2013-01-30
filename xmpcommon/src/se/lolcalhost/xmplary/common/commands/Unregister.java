@@ -14,7 +14,6 @@ public class Unregister extends Command {
 
 	public Unregister(XMPMain main, XMPMessage msg) {
 		super(main, msg);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
