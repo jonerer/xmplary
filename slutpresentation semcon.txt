@@ -1,0 +1,4 @@
+Welcome to a lunch seminar, where I will present the second half of my thesis -- security concerns regarding connecte embedded devices.
+The seminar will feature an overview of the work process for the second half, and details about the implementation of a multi-node interconnected system built on embeddable hardware. 
+Feel free to bring a lot of questions -- about how this could relate to the work semcon does, or about other things.
+Jon Mårdsjö

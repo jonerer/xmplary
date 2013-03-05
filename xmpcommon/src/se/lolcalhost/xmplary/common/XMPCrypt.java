@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -15,13 +14,11 @@ import java.security.SignatureException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -33,8 +30,6 @@ import se.lolcalhost.xmplary.common.models.XMPNode;
 import edu.vt.middleware.crypt.CryptException;
 import edu.vt.middleware.crypt.asymmetric.AsymmetricAlgorithm;
 import edu.vt.middleware.crypt.asymmetric.RSA;
-import edu.vt.middleware.crypt.digest.SHA512;
-import edu.vt.middleware.crypt.pbe.PKCS12KeyGenerator;
 import edu.vt.middleware.crypt.symmetric.AES;
 import edu.vt.middleware.crypt.symmetric.SymmetricAlgorithm;
 import edu.vt.middleware.crypt.util.Base64Converter;
@@ -245,7 +240,7 @@ public class XMPCrypt {
 	 * @return
 	 * @throws IOException 
 	 */
-	public static String encryptKey(SecretKey newKey, XMPNode target) {
+	public static String encryptKey(SecretKey newKey, XMPNode target) throws IOException {
 		final AsymmetricAlgorithm alg = new RSA();
 		alg.setKey(target.getCert().getPublicKey());
 		String result = null;
